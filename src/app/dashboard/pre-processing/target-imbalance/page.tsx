@@ -68,6 +68,119 @@ export default function TargetImbalance() {
     return balancedData;
   };
 
+  const euclideanDistance = (point1: number[], point2: number[]): number => {
+    return Math.sqrt(
+      point1.reduce((sum, val, idx) => sum + Math.pow(val - point2[idx], 2), 0)
+    );
+  };
+
+  const findKNearestNeighbors = (sample: number[], samples: number[][], k: number = 5): number[][] => {
+    const distances = samples.map((s, idx) => ({
+      sample: s,
+      distance: euclideanDistance(sample, s),
+      index: idx
+    }));
+    
+    // Sort by distance and exclude the sample itself
+    distances.sort((a, b) => a.distance - b.distance);
+    const neighbors = distances.slice(1, k + 1); // Exclude the sample itself
+    
+    return neighbors.map(n => n.sample);
+  };
+
+  const generateSyntheticSample = (sample: number[], neighbor: number[]): number[] => {
+    const syntheticSample: number[] = [];
+    const lambda = Math.random(); // Random value between 0 and 1
+    
+    for (let i = 0; i < sample.length; i++) {
+      syntheticSample[i] = sample[i] + lambda * (neighbor[i] - sample[i]);
+    }
+    
+    return syntheticSample;
+  };
+
+  const smoteOversample = (data: Record<string, string | number>[], column: string): Record<string, string | number>[] => {
+    const classCounts = calculateDistribution(data, column);
+    const maxCount = Math.max(...Object.values(classCounts));
+    
+    // Get numeric columns for SMOTE (excluding the target column)
+    const numericColumns = dataset?.columns
+      .filter(col => col.type === 'numeric' && col.name !== column)
+      .map(col => col.name) || [];
+    
+    if (numericColumns.length === 0) {
+      // Fallback to simple oversampling if no numeric columns
+      return oversampleData(data, column);
+    }
+
+    // Group records by class
+    const classGroups: { [key: string]: Record<string, string | number>[] } = {};
+    data.forEach(row => {
+      const classValue = row[column]?.toString() || 'unknown';
+      if (!classGroups[classValue]) {
+        classGroups[classValue] = [];
+      }
+      classGroups[classValue].push(row);
+    });
+
+    const balancedData: Record<string, string | number>[] = [...data];
+
+    // Apply SMOTE to minority classes
+    Object.entries(classGroups).forEach(([className, classData]) => {
+      const currentCount = classData.length;
+      const needCount = maxCount - currentCount;
+      
+      if (needCount <= 0) return; // Skip if already balanced or majority class
+
+      // Convert to numeric vectors for SMOTE
+      const numericVectors = classData.map(row => 
+        numericColumns.map(col => {
+          const val = row[col];
+          return typeof val === 'number' ? val : parseFloat(val?.toString() || '0');
+        })
+      );
+
+      if (numericVectors.length < 2) {
+        // Fallback to simple duplication if not enough samples
+        for (let i = 0; i < needCount; i++) {
+          const randomSample = classData[Math.floor(Math.random() * classData.length)];
+          balancedData.push({ ...randomSample });
+        }
+        return;
+      }
+
+      // Generate synthetic samples
+      for (let i = 0; i < needCount; i++) {
+        // Select random sample from minority class
+        const randomIndex = Math.floor(Math.random() * numericVectors.length);
+        const selectedSample = numericVectors[randomIndex];
+        
+        // Find k nearest neighbors
+        const neighbors = findKNearestNeighbors(selectedSample, numericVectors, 5);
+        
+        if (neighbors.length > 0) {
+          // Select random neighbor
+          const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
+          
+          // Generate synthetic sample
+          const syntheticVector = generateSyntheticSample(selectedSample, randomNeighbor);
+          
+          // Create new record with synthetic numeric values and original categorical values
+          const originalRecord = classData[randomIndex];
+          const syntheticRecord: Record<string, string | number> = { ...originalRecord };
+          
+          numericColumns.forEach((col, idx) => {
+            syntheticRecord[col] = syntheticVector[idx];
+          });
+          
+          balancedData.push(syntheticRecord);
+        }
+      }
+    });
+
+    return balancedData;
+  };
+
   const oversampleData = (data: Record<string, string | number>[], column: string): Record<string, string | number>[] => {
     const classCounts = calculateDistribution(data, column);
     const maxCount = Math.max(...Object.values(classCounts));
@@ -109,7 +222,7 @@ export default function TargetImbalance() {
       if (balanceMethod === 'undersample') {
         processedData.data = undersampleData(dataset.data, targetColumn);
       } else {
-        processedData.data = oversampleData(dataset.data, targetColumn);
+        processedData.data = smoteOversample(dataset.data, targetColumn);
       }
 
       // Save processed data
@@ -144,7 +257,7 @@ export default function TargetImbalance() {
   return (
     <BasePreprocessingPage
       title="Balance Target Classes"
-      description="Handle imbalanced classes in your target variable using undersampling or oversampling techniques."
+      description="Handle imbalanced classes in your target variable using undersampling or SMOTE oversampling techniques."
     >
       <div className="space-y-6">
         <div>
@@ -186,12 +299,12 @@ export default function TargetImbalance() {
             onChange={(e) => setBalanceMethod(e.target.value)}
           >
             <option value="undersample">Undersampling (reduce majority class)</option>
-            <option value="oversample">Oversampling (increase minority class)</option>
+            <option value="oversample">SMOTE Oversampling (generate synthetic samples)</option>
           </select>
           <p className="text-sm text-gray-500 mt-1">
             {balanceMethod === 'undersample' 
               ? 'Reduces majority classes to match the minority class size'
-              : 'Increases minority classes to match the majority class size'}
+              : 'Uses SMOTE to generate synthetic samples for minority classes based on nearest neighbors'}
           </p>
         </div>
 

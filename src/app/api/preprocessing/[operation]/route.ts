@@ -17,11 +17,11 @@ type DataRow = Record<string, string | number | null>;
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { operation: string } }
+  { params }: { params: Promise<{ operation: string }> }
 ) {
   try {
     const { dataset } = await request.json();
-    const operation = params.operation;
+    const { operation } = await params;
 
     // Process the dataset based on the operation
     let processedDataset = { ...dataset };
@@ -58,7 +58,7 @@ export async function POST(
         processedDataset = await handleTargetImbalance(processedDataset);
         break;
       default:
-        throw new Error(`Unsupported preprocessing operation: ${params.operation}`);
+        throw new Error(`Unsupported preprocessing operation: ${operation}`);
     }
 
     return NextResponse.json({ dataset: processedDataset });

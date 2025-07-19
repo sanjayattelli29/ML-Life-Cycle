@@ -182,7 +182,7 @@ export default function QualityMetrics() {
           setMetrics(data.metrics as Metrics);
           toast.success('Loaded metrics from cache');
         } else {
-          toast.loading('Calculating new metrics...', { duration: 3000 });
+        toast.loading('Calculating new metrics...', { duration: 3000 });
           const headers = selected.columns.map(col => col.name).join(',') + '\n';
           const rows = selected.data.map(row =>
             selected.columns.map(col => {
@@ -195,20 +195,20 @@ export default function QualityMetrics() {
           ).join('\n');
           const csvData = headers + rows;
           const flaskResponse = await fetch('http://127.0.0.1:1289/analyze', {
-            method: 'POST',
+          method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              datasetId: selected._id,
-              datasetName: selected.name,
+          body: JSON.stringify({
+            datasetId: selected._id,
+            datasetName: selected.name,
               csvData,
-              targetColumn: null
-            }),
-          });
+            targetColumn: null
+          }),
+        });
           if (!flaskResponse.ok) throw new Error('Failed to generate metrics from backend');
-          const result = await flaskResponse.json();
+        const result = await flaskResponse.json();
           if (!result.success) throw new Error(result.error || 'Failed to analyze dataset');
           setMetrics(result.metrics as Metrics);
-          toast.success('Generated new metrics');
+        toast.success('Generated new metrics');
         }
       } catch (error) {
         setError(error instanceof Error ? error.message : 'Failed to process dataset');
@@ -233,12 +233,12 @@ export default function QualityMetrics() {
     const prompt = `You are an expert data scientist. For the following data quality metric, provide:\n- A short AI opinion on the metric's value\n- How to improve or preprocess if needed\nFormat your answer as:\nMetric Name: ${metricName}\nMetric Score: ${metricScore}\nAI Opinion: ...\nHow to improve or preprocess: ...\n\nStatistical Summaries:\n${statsText}\n\nDataset Shape: ${shapeText}`;
     const mistralApiKey = process.env.NEXT_PUBLIC_MISTRAL_API_KEY;
     const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         'Authorization': `Bearer ${mistralApiKey}`,
-      },
-      body: JSON.stringify({
+        },
+        body: JSON.stringify({
         model: 'mistral-small-latest',
         temperature: 0.3,
         top_p: 0.9,
@@ -251,7 +251,7 @@ export default function QualityMetrics() {
         response_format: { type: 'text' }
       })
     });
-    if (!response.ok) {
+      if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Failed to get AI insights');
     }
@@ -279,7 +279,7 @@ export default function QualityMetrics() {
         let score = '';
         if (key === 'Class_Imbalance') {
           score = detail.imbalance_score !== undefined ? detail.imbalance_score.toFixed(4) : 'N/A';
-        } else {
+      } else {
           score = detail.pct !== undefined ? detail.pct.toFixed(2) + '%' : 'N/A';
         }
         setAiProgress(i + 1);
@@ -359,32 +359,32 @@ export default function QualityMetrics() {
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Quality Metrics Report</h1>
               <p className="text-gray-600">Comprehensive analysis of dataset quality metrics</p>
-            </div>
-            
+        </div>
+
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div className="flex-1 min-w-64">
-                <select
+              <select
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 font-medium"
-                  value={currentDataset?._id || ''}
-                  onChange={handleDatasetChange}
-                >
+                value={currentDataset?._id || ''}
+                onChange={handleDatasetChange}
+              >
                   <option value="">Choose a dataset to analyze</option>
-                  {datasets.map((dataset) => (
-                    <option key={dataset._id} value={dataset._id}>
-                      {dataset.name} ({dataset._id.substring(0, 8)}...)
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
+                {datasets.map((dataset) => (
+                  <option key={dataset._id} value={dataset._id}>
+                    {dataset.name} ({dataset._id.substring(0, 8)}...)
+                  </option>
+                ))}
+              </select>
+            </div>
+            
               <div className="flex gap-2">
                 {currentDataset && metrics && (
-                  <button
+                      <button
                     onClick={downloadCSV}
                     className="inline-flex items-center px-4 py-3 bg-green-600 text-white rounded-lg font-medium"
                   >
                     Download CSV
-                  </button>
+                      </button>
                 )}
                 <Link 
                   href="/dashboard" 
@@ -392,30 +392,30 @@ export default function QualityMetrics() {
                 >
                   Dashboard
                 </Link>
-              </div>
-            </div>
-          </div>
-        </div>
+                        </div>
+                          </div>
+                          </div>
+                        </div>
 
         {datasets.length > 0 ? (
-          <div className="space-y-6">
+                        <div className="space-y-6">
             {currentDataset && metrics && (
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {/* Quality Metrics Table */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-4">Quality Metrics</h2>
-                  <div className="overflow-x-auto">
+                                <div className="overflow-x-auto">
                     <table className="min-w-full">
-                      <thead>
+                                    <thead>
                         <tr className="border-b border-gray-200">
                           <th className="px-4 py-3 text-left font-semibold text-gray-900 text-sm">S.No</th>
                           <th className="px-4 py-3 text-left font-semibold text-gray-900 text-sm">Metric Name</th>
                           <th className="px-4 py-3 text-left font-semibold text-gray-900 text-sm">Count</th>
                           <th className="px-4 py-3 text-left font-semibold text-gray-900 text-sm">Total</th>
                           <th className="px-4 py-3 text-left font-semibold text-gray-900 text-sm">Percentage</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
                         {(Object.keys(METRIC_LABELS) as (keyof Omit<Metrics, 'Statistical_Summaries'>)[]).map((key, idx) => {
                           const detail = metrics[key];
                           let countCell = '';
@@ -437,8 +437,8 @@ export default function QualityMetrics() {
                             totalCell = detail.total !== undefined ? String(detail.total) : 'N/A';
                             pctCell = detail.pct !== undefined ? detail.pct.toFixed(2) + '%' : 'N/A';
                           }
-                          
-                          return (
+                                        
+                                        return (
                             <tr key={key} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                               <td className="px-4 py-3 text-gray-900 text-sm">{idx + 1}</td>
                               <td className="px-4 py-3 font-medium text-gray-900 text-sm">{METRIC_LABELS[key]}</td>
@@ -452,16 +452,16 @@ export default function QualityMetrics() {
                                     {showImbalanceMore ? 'less' : 'more'}
                                   </button>
                                 )}
-                              </td>
+                                            </td>
                               <td className="px-4 py-3 text-gray-900 text-sm">{totalCell}</td>
                               <td className="px-4 py-3 text-gray-900 text-sm">{pctCell}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                                          </tr>
+                                        );
+                                      })}
+                                    </tbody>
+                                  </table>
                   </div>
-                </div>
+                                </div>
 
                 {/* Statistical Summaries Table */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -472,9 +472,9 @@ export default function QualityMetrics() {
                         <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                      </div>
+                                    </div>
                       <p className="text-gray-500 font-medium">No numerical columns found</p>
-                    </div>
+                                    </div>
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="min-w-full">
@@ -497,11 +497,11 @@ export default function QualityMetrics() {
                           ))}
                         </tbody>
                       </table>
-                    </div>
+                                  </div>
                   )}
-                </div>
-              </div>
-            )}
+                                </div>
+                        </div>
+                      )}
 
             {/* AI Insights Section */}
             {currentDataset && metrics && (
@@ -524,8 +524,8 @@ export default function QualityMetrics() {
                         Download Insights
                       </button>
                     )}
-                  </div>
-                </div>
+                          </div>
+                        </div>
                 {aiError && (
                   <div className="text-red-600 font-medium mb-4">{aiError}</div>
                 )}
@@ -540,7 +540,7 @@ export default function QualityMetrics() {
                         {section.split('\n').map((line, i) => (
                           <div key={i} className="text-gray-900 text-base leading-relaxed mb-1">
                             {line}
-                          </div>
+                    </div>
                         ))}
                       </div>
                     ))}

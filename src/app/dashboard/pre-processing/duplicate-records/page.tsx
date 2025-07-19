@@ -23,23 +23,36 @@ export default function DuplicateRecords() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [duplicateCount, setDuplicateCount] = useState<number>(0);
 
-  const findDuplicates = (data: Record<string, string | number>[], columns: string[]): Set<number> => {
-    const seen = new Map<string, number>();
-    const duplicates = new Set<number>();
+  // Python pandas-like drop_duplicates implementation
+  const drop_duplicates = (data: Record<string, string | number>[], subset: string[], keep: string = 'first'): Record<string, string | number>[] => {
+    const seen = new Set<string>();
+    const result: Record<string, string | number>[] = [];
+    let duplicatesFound = 0;
 
-    data.forEach((row, index) => {
-      const key = columns
+    // Process data based on keep strategy
+    const dataToProcess = keep === 'last' ? [...data].reverse() : data;
+
+    dataToProcess.forEach((row, index) => {
+      // Create composite key from selected columns (subset)
+      const key = subset
         .map(col => row[col]?.toString() || '')
-        .join('|');
+        .join('__SEPARATOR__');
 
-      if (seen.has(key)) {
-        duplicates.add(index);
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(row);
       } else {
-        seen.set(key, index);
+        duplicatesFound++;
       }
     });
 
-    return duplicates;
+    // If we processed in reverse for 'last', reverse the result back
+    const finalResult = keep === 'last' ? result.reverse() : result;
+    
+    // Update duplicate count
+    setDuplicateCount(duplicatesFound);
+    
+    return finalResult;
   };
 
   const handleProcess = async () => {
@@ -50,36 +63,20 @@ export default function DuplicateRecords() {
 
     setIsProcessing(true);
     try {
-      // Find duplicate indices
-      const duplicateIndices = findDuplicates(dataset.data, selectedColumns);
-      setDuplicateCount(duplicateIndices.size);
+      // Use pandas-like drop_duplicates method
+      const uniqueData = drop_duplicates(dataset.data, selectedColumns, keepStrategy);
 
-      if (duplicateIndices.size === 0) {
+      if (duplicateCount === 0) {
         toast.success('No duplicates found in the selected columns');
         setIsProcessing(false);
         return;
       }
 
-      const processedData = { ...dataset };
-      const uniqueMap = new Map<string, number>();
-
-      // Create a map of unique records based on selected columns
-      dataset.data.forEach((row, index) => {
-        const key = selectedColumns
-          .map(col => row[col]?.toString() || '')
-          .join('|');
-
-        if (keepStrategy === 'first' && !uniqueMap.has(key)) {
-          uniqueMap.set(key, index);
-        } else if (keepStrategy === 'last') {
-          uniqueMap.set(key, index);
-        }
-      });
-
-      // Filter data to keep only unique records
-      processedData.data = dataset.data.filter((_, index) => 
-        Array.from(uniqueMap.values()).includes(index)
-      );
+      // Create processed dataset
+      const processedData = {
+        ...dataset,
+        data: uniqueData
+      };
 
       // Save processed data
       const response = await fetch('/api/datasets/process', {
@@ -98,7 +95,7 @@ export default function DuplicateRecords() {
         throw new Error('Failed to save processed data');
       }
 
-      toast.success(`Removed ${duplicateIndices.size} duplicate records`);
+      toast.success(`Removed ${duplicateCount} duplicate records`);
       setDataset(processedData);
     } catch (error) {
       console.error('Error processing duplicates:', error);

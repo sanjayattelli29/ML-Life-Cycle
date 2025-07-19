@@ -478,7 +478,7 @@ class DataQualityMetrics:
                     min_class = min(value_counts.values())
                     total = sum(value_counts.values())
                     class_imbalance['imbalance_score'] = 1 - (min_class / total)
-            else:
+                else:
                 if categorical_cols:
                     col = categorical_cols[0]
                     value_counts = df[col].value_counts().to_dict()
@@ -560,7 +560,7 @@ class DataQualityMetrics:
                 'Range_Violations': {'count': range_viol_count, 'total': range_viol_total, 'pct': range_viol_pct},
                 'Statistical_Summaries': stats
             }
-
+            
             return pd.DataFrame([metrics])
         except Exception as e:
             logger.error(f"Error calculating metrics: {str(e)}")
