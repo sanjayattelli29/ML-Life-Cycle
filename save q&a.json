@@ -1,0 +1,183 @@
+{
+  "name": "save q&a",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "log-chat",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        -100
+      ],
+      "id": "5da1f4e5-60b8-4317-85e5-b22e250a4340",
+      "name": "Webhook",
+      "webhookId": "71f2a163-a0bd-456e-a128-28200b37542a"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1HsjyE7UUoyI7zaGGdeL6MNBxabCvYElHyp09rT681tg",
+          "mode": "list",
+          "cachedResultName": "Q&A Save",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HsjyE7UUoyI7zaGGdeL6MNBxabCvYElHyp09rT681tg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HsjyE7UUoyI7zaGGdeL6MNBxabCvYElHyp09rT681tg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Question": "={{ $json.body.question }}",
+            "Answer": "={{ $json.body.answer }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Question",
+              "displayName": "Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Answer",
+              "displayName": "Answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -80,
+        20
+      ],
+      "id": "69e60b75-9bc3-4d10-b5f2-6a180ff3c888",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "SCHcmGr2fKULyD9Q",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"status\": \"saved\"\n}\n",
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        260,
+        -80
+      ],
+      "id": "6b983dfc-33ca-4c15-8483-2909d81170c2",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "chatId": "5352707272",
+        "text": "=🤖 {{ $json.body.question }} → 💡 {{ $json.body.answer }}\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        -200
+      ],
+      "id": "cc40a2fa-32a5-4927-9a09-69800e7f128c",
+      "name": "Send a text message",
+      "webhookId": "6e0d1570-50be-4847-94bc-c184dc932311",
+      "credentials": {
+        "telegramApi": {
+          "id": "ckh4t6MtbqlSEyN4",
+          "name": "Telegram account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        []
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b078712d-8e28-4c66-a08d-d021cce36d0b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c3822efd7b4592da3e6ba85f6aedf5c30c09beccbfd0e4d6507c4b7f9f45cd8c"
+  },
+  "id": "DDYCNk8uEtWYWMC2",
+  "tags": []
+}
