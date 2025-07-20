@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { autoRemoveRedundantFeatures } from '../../../../lib/data-preprocessor/core/metric-processor-registry';
 
 interface Column {
   name: string;
@@ -173,60 +174,13 @@ async function handleDuplicateRecords(dataset: Dataset): Promise<Dataset> {
 }
 
 async function handleFeatureCorrelation(dataset: Dataset): Promise<Dataset> {
-  // This is a simplified correlation analysis
-  // In a real application, you would want to implement more sophisticated correlation analysis
-  const numericColumns = dataset.columns
-    .filter(col => col.type === 'numeric')
-    .map(col => col.name);
-
-  const correlations: { [key: string]: { [key: string]: number } } = {};
-
-  for (const col1 of numericColumns) {
-    correlations[col1] = {};
-    for (const col2 of numericColumns) {
-      if (col1 === col2) continue;
-
-      const values1 = dataset.data.map(row => Number(row[col1]));
-      const values2 = dataset.data.map(row => Number(row[col2]));
-
-      const mean1 = values1.reduce((a, b) => a + b, 0) / values1.length;
-      const mean2 = values2.reduce((a, b) => a + b, 0) / values2.length;
-
-      const correlation = values1.reduce((sum, val1, i) => {
-        const val2 = values2[i];
-        return sum + (val1 - mean1) * (val2 - mean2);
-      }, 0) / Math.sqrt(
-        values1.reduce((sum, val) => sum + Math.pow(val - mean1, 2), 0) *
-        values2.reduce((sum, val) => sum + Math.pow(val - mean2, 2), 0)
-      );
-
-      correlations[col1][col2] = correlation;
-    }
-  }
-
-  // Remove highly correlated features (correlation > 0.9)
-  const columnsToRemove = new Set<string>();
-  for (const col1 in correlations) {
-    for (const col2 in correlations[col1]) {
-      if (Math.abs(correlations[col1][col2]) > 0.9) {
-        columnsToRemove.add(col2);
-      }
-    }
-  }
-
-  const remainingColumns = dataset.columns.filter(col => !columnsToRemove.has(col.name));
-  const processedData = dataset.data.map(row => {
-    const newRow: Record<string, string | number> = {};
-    for (const col of remainingColumns) {
-      newRow[col.name] = row[col.name];
-    }
-    return newRow;
-  });
-
+  // Automatically remove both highly correlated and low-variance features
+  const processed = autoRemoveRedundantFeatures(dataset);
   return {
     ...dataset,
-    columns: remainingColumns,
-    data: processedData
+    columns: processed.columns,
+    data: processed.data,
+    // removedColumns: processed.removedColumns, // Omit if not in Dataset type
   };
 }
 
@@ -260,29 +214,14 @@ async function handleInconsistencies(dataset: Dataset): Promise<Dataset> {
 }
 
 async function handleLowVariance(dataset: Dataset): Promise<Dataset> {
-  const processedColumns = dataset.columns.filter(column => {
-    if (column.type !== 'numeric') return true;
-
-    const values = dataset.data
-      .map(row => Number(row[column.name]))
-      .filter((val): val is number => !isNaN(val));
-    
-    const mean = values.reduce((a, b) => a + b, 0) / values.length;
-    const variance = values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length;
-    
-    // Keep columns with variance above threshold
-    return variance > 0.01; // Adjust threshold as needed
-  });
-
-  const processedData = dataset.data.map((row: DataRow) => {
-    const newRow: DataRow = {};
-    processedColumns.forEach(column => {
-      newRow[column.name] = row[column.name];
-    });
-    return newRow;
-  });
-
-  return { ...dataset, columns: processedColumns, data: processedData };
+  // Use the same logic as feature correlation for unified redundant feature removal
+  const processed = autoRemoveRedundantFeatures(dataset);
+  return {
+    ...dataset,
+    columns: processed.columns,
+    data: processed.data,
+    // removedColumns: processed.removedColumns, // Omit if not in Dataset type
+  };
 }
 
 async function handleMeanMedianDrift(dataset: Dataset): Promise<Dataset> {

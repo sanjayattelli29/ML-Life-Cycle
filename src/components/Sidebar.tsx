@@ -26,7 +26,8 @@ import {
   Radar,
   BarChartBig,
   TrendingUp,
-  BarChart4
+  BarChart4,
+  Zap
 } from 'lucide-react';
 
 const mainNavigation = [
@@ -34,8 +35,10 @@ const mainNavigation = [
   { name: 'Data Table', href: '/dashboard/data-table', icon: Table },
   { name: 'Upload Dataset', href: '/dashboard/upload', icon: Upload },
   { name: 'Quality Metrics', href: '/dashboard/quality-metrics', icon: ClipboardCheck },
-  { name: 'AI Analysis', href: '/dashboard/ai-analysis', icon: Brain },
   { name: 'Pre-processing', href: '/dashboard/pre-processing', icon: ClipboardCheck },
+  { name: 'Data Transformation', href: '/dashboard/data-transformation', icon: Zap },
+  { name: 'AI Analysis', href: '/dashboard/ai-analysis', icon: Brain },
+
   { name: 'Knowledge', href: '/dashboard/knowledge', icon: Brain },
   { name: 'Metrics Guide', href: '/dashboard/metrics-guide', icon: BarChart4  },
   { name: 'Notes', href: '/dashboard/notes', icon: ClipboardCheck },
