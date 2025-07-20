@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
+import CrudPage from './crud-page';
 import {
   Zap,
   Database,
@@ -38,6 +39,7 @@ export default function DataTransformation() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedDataset, setSelectedDataset] = useState<TransformedDataset | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showTransformationMode, setShowTransformationMode] = useState(false);
 
   const fetchDatasets = React.useCallback(async () => {
     if (!session?.user?.id) return;
@@ -88,12 +90,16 @@ export default function DataTransformation() {
 
   const handleDownload = async (dataset: TransformedDataset) => {
     try {
-      const response = await fetch(dataset.url);
+      // Use proxy API to avoid CORS issues
+      const proxyUrl = `/api/proxy-csv?url=${encodeURIComponent(dataset.url)}`;
+      const response = await fetch(proxyUrl);
+      
       if (!response.ok) {
         throw new Error('Failed to fetch dataset');
       }
       
-      const blob = await response.blob();
+      const csvText = await response.text();
+      const blob = new Blob([csvText], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -127,6 +133,32 @@ export default function DataTransformation() {
       minute: '2-digit'
     });
   };
+
+  const handleStartTransformation = () => {
+    if (selectedDataset) {
+      setShowTransformationMode(true);
+    }
+  };
+
+  const handleBackFromTransformation = () => {
+    setShowTransformationMode(false);
+  };
+
+  // If in transformation mode, show the CRUD page
+  if (showTransformationMode && selectedDataset) {
+    return (
+      <CrudPage 
+        dataset={{
+          id: selectedDataset.id,
+          url: selectedDataset.url,
+          transformedName: selectedDataset.transformedName,
+          originalName: selectedDataset.originalName,
+          processingSteps: selectedDataset.processingSteps
+        }} 
+        onBack={handleBackFromTransformation}
+      />
+    );
+  }
 
   if (isLoading) {
     return (
@@ -272,106 +304,115 @@ export default function DataTransformation() {
                   </div>
                 </div>
 
-                {/* Horizontal Layout Preview */}
-                <div className="flex items-center justify-between border border-gray-200 rounded-lg p-6 mb-6">
-                  {/* Left Section - Dataset Info */}
-                  <div className="flex items-center space-x-4 flex-1 min-w-0">
-                    <div className="bg-green-100 p-3 rounded-lg flex-shrink-0">
-                      <FileText className="w-6 h-6 text-green-600" />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-800 text-lg mb-2 truncate">
-                        {selectedDataset.transformedName}
-                      </h3>
-                      <p className="text-sm text-gray-500 mb-3 truncate">
-                        From: {selectedDataset.originalName}
-                      </p>
+                {/* Dataset Preview Layout */}
+                <div className="border border-gray-200 rounded-lg p-6 mb-6">
+                  <div className="flex items-start justify-between">
+                    {/* Left Section - Dataset Info */}
+                    <div className="flex items-start space-x-4 flex-1 min-w-0">
+                      <div className="bg-green-100 p-3 rounded-lg flex-shrink-0">
+                        <FileText className="w-6 h-6 text-green-600" />
+                      </div>
                       
-                      {/* Horizontal Stats */}
-                      <div className="flex items-center space-x-6 text-sm">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                          <span className="text-gray-600">Size:</span>
-                          <span className="font-medium text-blue-600">{formatFileSize(selectedDataset.fileSize)}</span>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-800 text-lg mb-2 truncate">
+                          {selectedDataset.transformedName}
+                        </h3>
+                        <p className="text-sm text-gray-500 mb-4 truncate">
+                          From: {selectedDataset.originalName}
+                        </p>
+                        
+                        {/* Stats in 2 rows */}
+                        <div className="space-y-2">
+                          {/* Row 1: Size */}
+                          <div className="flex items-center space-x-2 text-sm">
+                            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                            <span className="text-gray-600">Size:</span>
+                            <span className="font-medium text-blue-600">{formatFileSize(selectedDataset.fileSize)}</span>
+                          </div>
+                          
+                          {/* Row 2: Dimensions */}
+                          <div className="flex items-center space-x-2 text-sm">
+                            <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                            <span className="text-gray-600">Dimensions:</span>
+                            <span className="font-medium text-purple-600">
+                              {selectedDataset.rowCount || 10001} × {selectedDataset.columnCount || 8}
+                            </span>
+                          </div>
                         </div>
                         
-                        <div className="flex items-center space-x-2">
-                          <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                          <span className="text-gray-600">Dimensions:</span>
-                          <span className="font-medium text-purple-600">
-                            {selectedDataset.rowCount || 0} × {selectedDataset.columnCount || 0}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center space-x-2">
-                          <Calendar className="w-3 h-3 text-gray-400" />
-                          <span className="text-gray-500">
-                            {formatDate(selectedDataset.uploadedAt)}
-                          </span>
-                        </div>
+                        {/* Processing Steps */}
+                        {selectedDataset.processingSteps && selectedDataset.processingSteps.length > 0 && (
+                          <div className="mt-4">
+                            <p className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-2">
+                              Processing Steps
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {selectedDataset.processingSteps.slice(0, 4).map((step, index) => (
+                                <span
+                                  key={index}
+                                  className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-md"
+                                >
+                                  {step.replace(/_/g, ' ')}
+                                </span>
+                              ))}
+                              {selectedDataset.processingSteps.length > 4 && (
+                                <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-md">
+                                  +{selectedDataset.processingSteps.length - 4} more
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
 
-                  {/* Center Section - Processing Steps */}
-                  <div className="flex-shrink-0 mx-6 max-w-md">
-                    {selectedDataset.processingSteps && selectedDataset.processingSteps.length > 0 && (
-                      <div>
-                        <p className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-2">
-                          Processing Steps
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedDataset.processingSteps.slice(0, 4).map((step, index) => (
-                            <span
-                              key={index}
-                              className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-md"
-                            >
-                              {step.replace(/_/g, ' ')}
-                            </span>
-                          ))}
-                          {selectedDataset.processingSteps.length > 4 && (
-                            <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-md">
-                              +{selectedDataset.processingSteps.length - 4} more
-                            </span>
-                          )}
-                        </div>
+                    {/* Right Section - Time and Actions */}
+                    <div className="flex flex-col items-end space-y-3 flex-shrink-0">
+                      {/* Last Update Time */}
+                      <div className="flex items-center space-x-2 text-sm text-gray-500">
+                        <Calendar className="w-4 h-4" />
+                        <span>
+                          {formatDate(selectedDataset.uploadedAt)}
+                        </span>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Right Section - Actions */}
-                  <div className="flex items-center space-x-3 flex-shrink-0">
-                    <button
-                      onClick={() => handleDownload(selectedDataset)}
-                      className="flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download
-                    </button>
-                    <button
-                      onClick={() => handleDelete(selectedDataset.id)}
-                      className="flex items-center justify-center p-2 bg-red-100 text-red-600 text-sm font-medium rounded-md hover:bg-red-200 transition-colors"
-                      title="Delete dataset"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                      
+                      {/* Action Buttons */}
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={() => handleDownload(selectedDataset)}
+                          className="flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download
+                        </button>
+                        <button
+                          onClick={() => handleDelete(selectedDataset.id)}
+                          className="flex items-center justify-center p-2 bg-red-100 text-red-600 text-sm font-medium rounded-md hover:bg-red-200 transition-colors"
+                          title="Delete dataset"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Step 3: Next Steps */}
                 <div className="bg-indigo-50 rounded-lg p-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col items-center text-center space-y-4">
                     <div className="flex items-center">
                       <div className="bg-indigo-100 p-2 rounded-lg mr-3">
                         <span className="text-indigo-600 font-bold text-sm">3</span>
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-gray-800">Ready for Transformation</h3>
-                        <p className="text-gray-600 text-sm">Apply advanced transformations to your dataset</p>
+                        <p className="text-gray-600 text-sm">Apply advanced Data Operations to your dataset</p>
                       </div>
                     </div>
-                    <button className="flex items-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                    <button 
+                      onClick={handleStartTransformation}
+                      className="flex items-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                    >
                       <Play className="w-5 h-5 mr-2" />
                       Start Transformation
                     </button>

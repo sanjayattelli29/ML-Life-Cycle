@@ -39,12 +39,17 @@ async function dbConnect() {
     console.log('MongoDB URI exists:', !!MONGODB_URI);
     
     const opts = {
-      bufferCommands: false,
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 15000, // Increased timeout
-      socketTimeoutMS: 45000,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 75000,
+      connectTimeoutMS: 30000,
+      maxIdleTimeMS: 30000,
+      heartbeatFrequencyMS: 10000,
+      retryWrites: true,
     };
 
+    // Disable mongoose buffering globally
+    mongoose.set('bufferCommands', false);
     mongoose.set('strictQuery', true);
     cached.promise = mongoose.connect(MONGODB_URI, opts);
   }
@@ -54,6 +59,7 @@ async function dbConnect() {
     console.log('✅ MongoDB connected successfully via Mongoose');
   } catch (e) {
     cached.promise = null;
+    cached.conn = null;
     console.error('❌ MongoDB connection failed:', e);
     throw e;
   }

@@ -685,6 +685,16 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
       // Get selected processing steps
       const selectedFactors = getSelectedFactorKeys();
       
+      console.log('About to upload dataset:', {
+        csvDataLength: processedCSV.length,
+        datasetName: currentDataset.name,
+        selectedFactors,
+        hasReport: !!preprocessingReport
+      });
+      
+      // Ensure CSV data is properly formatted (remove any BOM or special characters)
+      const cleanCsvData = processedCSV.replace(/^\ufeff/, ''); // Remove BOM if present
+      
       // Upload to R2 and save to MongoDB
       const response = await fetch('/api/transformed-datasets/upload', {
         method: 'POST',
@@ -693,7 +703,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
         },
         credentials: 'include', // Include session cookies for authentication
         body: JSON.stringify({
-          csvData: processedCSV,
+          csvData: cleanCsvData,
           originalDatasetName: currentDataset.name,
           processingSteps: selectedFactors,
           preprocessingReport: preprocessingReport
@@ -701,7 +711,38 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
       });
 
       if (!response.ok) {
-        throw new Error('Failed to upload dataset to cloud storage');
+        // Try to get detailed error information
+        let errorMessage = 'Failed to upload dataset to cloud storage';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.details || errorMessage;
+          console.error('Upload API error response:', errorData);
+          
+          // Provide more specific error messages
+          if (errorMessage.includes('MongoDB connection is not ready')) {
+            errorMessage = 'Database connection issue - please try again in a moment';
+          } else if (errorMessage.includes('timeout')) {
+            errorMessage = 'Connection timeout - please check your internet and try again';
+          } else if (errorMessage.includes('Database connection failed')) {
+            errorMessage = 'Database error - please try again or contact support';
+          }
+        } catch {
+          // If JSON parsing fails, try to get text
+          try {
+            const errorText = await response.text();
+            console.error('Upload API error text:', errorText);
+            if (errorText.includes('timeout')) {
+              errorMessage = 'Database connection timeout - please try again';
+            } else if (errorText.includes('MongoDB')) {
+              errorMessage = 'Database error - please check your connection';
+            } else if (errorText.includes('500')) {
+              errorMessage = 'Server error - please try again in a moment';
+            }
+          } catch {
+            console.error('Could not parse error response');
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
