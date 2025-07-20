@@ -4,7 +4,6 @@ import { authOptions } from '../auth/[...nextauth]/route';
 import dbConnect from '@/lib/mongoose';
 import TransformedDataset from '@/models/TransformedDataset';
 import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
 
 export async function GET() {
   try {
@@ -58,6 +57,85 @@ export async function GET() {
     console.error('Error fetching transformed datasets:', error);
     return NextResponse.json({ 
       error: 'Failed to fetch datasets',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    console.log('=== Save Transformed Dataset API Route Called ===');
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      console.log('No session or user ID found');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    console.log('User authenticated:', session.user.id);
+
+    // Parse request body
+    const body = await request.json();
+    console.log('Request body:', JSON.stringify(body, null, 2));
+
+    const {
+      originalName,
+      transformedName,
+      url,
+      fileSize,
+      rowCount,
+      columnCount,
+      processingSteps,
+      metadata
+    } = body;
+
+    // Validate required fields
+    if (!originalName || !transformedName || !url) {
+      return NextResponse.json({ 
+        error: 'Missing required fields: originalName, transformedName, url' 
+      }, { status: 400 });
+    }
+
+    // Use native MongoDB client for consistency
+    console.log('Using native MongoDB client...');
+    const client = await clientPromise;
+    const db = client.db(process.env.DB_NAME);
+    
+    // Create dataset document
+    const datasetDoc = {
+      userId: session.user.id,
+      originalDatasetName: originalName,
+      transformedDatasetName: transformedName,
+      r2Url: url,
+      fileSize: fileSize || 0,
+      processingSteps: processingSteps || [],
+      metadata: {
+        rowCount: rowCount || 0,
+        columnCount: columnCount || 0,
+        ...metadata
+      },
+      uploadedAt: new Date().toISOString(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    console.log('Inserting dataset document:', JSON.stringify(datasetDoc, null, 2));
+
+    // Insert the document
+    const result = await db.collection('transformeddatasets').insertOne(datasetDoc);
+
+    console.log('Dataset saved successfully with ID:', result.insertedId);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Dataset saved successfully',
+      datasetId: result.insertedId
+    });
+
+  } catch (error) {
+    console.error('Error saving transformed dataset:', error);
+    return NextResponse.json({ 
+      error: 'Failed to save dataset',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }

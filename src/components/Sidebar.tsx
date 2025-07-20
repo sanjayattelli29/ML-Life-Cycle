@@ -27,7 +27,10 @@ import {
   BarChartBig,
   TrendingUp,
   BarChart4,
-  Zap
+  Zap,
+  Target,
+  Star,
+  Settings
 } from 'lucide-react';
 
 const mainNavigation = [
@@ -37,6 +40,9 @@ const mainNavigation = [
   { name: 'Quality Metrics', href: '/dashboard/quality-metrics', icon: ClipboardCheck },
   { name: 'Pre-processing', href: '/dashboard/pre-processing', icon: ClipboardCheck },
   { name: 'Data Transformation', href: '/dashboard/data-transformation', icon: Zap },
+  { name: 'Data Normalization', href: '/dashboard/data-normalization', icon: Target },
+  { name: 'Feature Importance', href: '/dashboard/feature-importance', icon: Star },
+  { name: 'Model Training', href: '/dashboard/model-training', icon: Settings },
   { name: 'AI Analysis', href: '/dashboard/ai-analysis', icon: Brain },
 
   { name: 'Knowledge', href: '/dashboard/knowledge', icon: Brain },

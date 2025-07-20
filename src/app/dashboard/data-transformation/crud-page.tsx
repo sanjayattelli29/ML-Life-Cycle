@@ -24,6 +24,7 @@ import AddIcon from "@mui/icons-material/Add";
 import MergeTypeIcon from "@mui/icons-material/MergeType";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import GpsFixedIcon from "@mui/icons-material/GpsFixed";
 
 // Type for a row in the table (CSV row)
 type RowData = Record<string, string>;
@@ -180,6 +181,11 @@ export default function CrudPage({ dataset, onBack }: CrudPageProps) {
   // Toggle fullscreen mode
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
+  };
+
+  // Navigate to normalization page
+  const handleProcessToNormalization = () => {
+    window.location.href = '/dashboard/data-normalization';
   };
 
   // Handle ESC key to exit fullscreen
@@ -675,6 +681,24 @@ export default function CrudPage({ dataset, onBack }: CrudPageProps) {
           }}
         >
           {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<GpsFixedIcon />}
+          onClick={handleProcessToNormalization}
+          disabled={loading}
+          size="small"
+          sx={{
+            color: '#1f2937',
+            borderColor: '#3b82f6',
+            backgroundColor: '#eff6ff',
+            '&:hover': {
+              borderColor: '#2563eb',
+              backgroundColor: '#dbeafe'
+            }
+          }}
+        >
+          Process to Normalization
         </Button>
       </Stack>
 
