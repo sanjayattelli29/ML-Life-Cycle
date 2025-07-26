@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 import Papa from 'papaparse';
+import ModelTrainingConfig from '@/components/ModelTrainingConfig';
 import {
   Settings,
   Database,
@@ -11,7 +12,6 @@ import {
   AlertCircle,
   RefreshCw,
   ChevronDown,
-  CheckCircle,
   BarChart3,
   Loader2,
   PlayCircle,
@@ -60,7 +60,8 @@ export default function ModelTraining() {
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [showAllRows, setShowAllRows] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isTrainingStarted, setIsTrainingStarted] = useState(false);
+  const [showModelConfig, setShowModelConfig] = useState(false);
+  const [selectedTargetColumn, setSelectedTargetColumn] = useState<string>('');
 
   // Fetch datasets from Feature Importance processed datasets
   const fetchDatasets = React.useCallback(async () => {
@@ -150,9 +151,33 @@ export default function ModelTraining() {
     fetchDatasets();
   };
 
-  const handleStartModelTraining = () => {
-    setIsTrainingStarted(true);
-    toast.success('Model training will be implemented in the next phase!');
+  const handleShowModelConfig = () => {
+    console.log('🔍 Start Model Training button clicked!');
+    console.log('Selected Dataset:', selectedDataset);
+    console.log('Data Preview:', dataPreview);
+    console.log('Selected Target Column:', selectedTargetColumn);
+    
+    if (!selectedDataset) {
+      toast.error('Please select a dataset first');
+      return;
+    }
+
+    if (!dataPreview) {
+      toast.error('Please preview the dataset first');
+      return;
+    }
+
+    if (!selectedTargetColumn) {
+      toast.error('Please select a target column for training');
+      return;
+    }
+
+    console.log('✅ All validations passed. Showing model config...');
+    setShowModelConfig(true);
+  };
+
+  const handleBackFromConfig = () => {
+    setShowModelConfig(false);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -185,8 +210,18 @@ export default function ModelTraining() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-8">
+      {/* Show Model Configuration Interface */}
+      {showModelConfig && selectedDataset && dataPreview ? (
+        <ModelTrainingConfig
+          dataset={selectedDataset}
+          dataPreview={dataPreview}
+          selectedTarget={selectedTargetColumn}
+          onBack={handleBackFromConfig}
+        />
+      ) : (
+        <>
+          {/* Header */}
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-8">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between">
             <div>
@@ -288,7 +323,7 @@ export default function ModelTraining() {
                           setSelectedDataset(dataset);
                           setShowDropdown(false);
                           setShowPreview(false);
-                          setIsTrainingStarted(false);
+                          setSelectedTargetColumn('');
                         }}
                         className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
                       >
@@ -430,6 +465,42 @@ export default function ModelTraining() {
                   </div>
                 )}
 
+                {/* Target Column Selection */}
+                <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-medium text-blue-900 mb-3 flex items-center">
+                    <Target className="w-4 h-4 mr-2" />
+                    Select Target Column for Training
+                  </h4>
+                  <p className="text-sm text-blue-700 mb-3">
+                    Choose the column you want to predict (target variable):
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+                    {dataPreview.headers.map((header) => (
+                      <button
+                        key={header}
+                        onClick={() => setSelectedTargetColumn(header)}
+                        className={`px-3 py-2 text-sm rounded-lg border transition-colors ${
+                          selectedTargetColumn === header
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white text-blue-700 border-blue-300 hover:bg-blue-100'
+                        }`}
+                      >
+                        {header}
+                      </button>
+                    ))}
+                  </div>
+                  {selectedTargetColumn && (
+                    <div className="mt-3 p-2 bg-blue-100 rounded-md">
+                      <p className="text-sm text-blue-800">
+                        <strong>Selected Target:</strong> {selectedTargetColumn}
+                      </p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        Features: {dataPreview.headers.filter(h => h !== selectedTargetColumn).join(', ')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
                 {/* Search and filters for all rows view */}
                 {showAllRows && (
                   <div className="mb-4">
@@ -463,10 +534,17 @@ export default function ModelTraining() {
                           {dataPreview.headers.map((header, index) => (
                             <th
                               key={index}
-                              className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 last:border-r-0 bg-gray-50"
+                              className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider border-r border-gray-200 last:border-r-0 ${
+                                selectedTargetColumn === header 
+                                  ? 'bg-blue-100 text-blue-800' 
+                                  : 'bg-gray-50 text-gray-500'
+                              }`}
                             >
                               <div className="flex items-center">
                                 <span className="whitespace-nowrap">{header}</span>
+                                {selectedTargetColumn === header && (
+                                  <Target className="ml-2 w-3 h-3 text-blue-600" />
+                                )}
                                 {header === selectedDataset.metadata?.targetColumn && (
                                   <Target className="ml-2 w-3 h-3 text-purple-600" />
                                 )}
@@ -535,40 +613,28 @@ export default function ModelTraining() {
                   </h4>
                   <p className="text-purple-700 mb-4">
                     This dataset is processed and ready for machine learning model training. 
-                    Start training to build predictive models.
+                    {selectedTargetColumn ? (
+                      <span className="text-green-700 font-medium"> Target column &quot;{selectedTargetColumn}&quot; selected. Ready to start training!</span>
+                    ) : (
+                      <span className="text-orange-700 font-medium"> Please select a target column above before starting training.</span>
+                    )}
                   </p>
                   
                   <button
-                    onClick={handleStartModelTraining}
-                    disabled={isTrainingStarted}
+                    onClick={(e) => {
+                      console.log('🚀 Button clicked!', e);
+                      handleShowModelConfig();
+                    }}
+                    disabled={!selectedTargetColumn}
                     className={`w-full px-6 py-3 font-medium rounded-lg transition-colors flex items-center justify-center ${
-                      isTrainingStarted 
-                        ? 'bg-green-600 text-white hover:bg-green-700' 
-                        : 'bg-purple-600 text-white hover:bg-purple-700'
+                      selectedTargetColumn 
+                        ? 'bg-purple-600 text-white hover:bg-purple-700' 
+                        : 'bg-gray-400 text-gray-200 cursor-not-allowed'
                     }`}
                   >
-                    {isTrainingStarted ? (
-                      <>
-                        <CheckCircle className="w-5 h-5 mr-2" />
-                        Training Initiated
-                      </>
-                    ) : (
-                      <>
-                        <PlayCircle className="w-5 h-5 mr-2" />
-                        🚀 Start Model Training
-                      </>
-                    )}
+                    <PlayCircle className="w-5 h-5 mr-2" />
+                    🚀 Start Model Training
                   </button>
-
-                  {isTrainingStarted && (
-                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                      <p className="text-green-800 text-sm">
-                        🎯 Model training functionality will be implemented in the next development phase. 
-                        This will include algorithm selection, hyperparameter tuning, cross-validation, 
-                        and model evaluation metrics.
-                      </p>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
@@ -593,6 +659,8 @@ export default function ModelTraining() {
           background: #94a3b8;
         }
       `}</style>
+        </>
+      )}
     </div>
   );
 }

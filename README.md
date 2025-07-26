@@ -184,11 +184,26 @@ graph TD
 
 ### 🎮 Quick Start
 ```bash
+# 1. Clone and setup frontend
 git clone https://github.com/your-username/Data-VizAI.git
 cd Data-VizAI && npm install
 cp .env.example .env.local  # Configure your env
-npm run dev                 # Ready to rock! 🚀
+npm run dev                 # Frontend ready! 🚀
 ```
+
+#### 🤖 ML Backend Server (for Model Training)
+```bash
+# 2. Start the ML backend server for model training features
+python app.py              # Starts on localhost:5000
+```
+
+**Note**: The ML backend server (`app.py`) is required for:
+- 🎯 Model Training functionality
+- 📊 AI-powered model performance analysis
+- 🔮 Real-time predictions
+- � Advanced ML metrics and insights
+
+Without the ML server, you can still use all other features like data visualization, preprocessing, and analysis!
 
 ---
 
