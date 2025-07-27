@@ -20,87 +20,87 @@ import {  ArrowUpTrayIcon,
   ClockIcon
 } from '@heroicons/react/24/outline';
 
-// Analytics Flow Section Component
-const AnalyticsFlowSection = () => {
-  const flowSteps = [
+// ML Lifecycle Learning Flow Section Component
+const MLLifecycleFlowSection = () => {
+  const lifecycleSteps = [
     {
       id: 1,
-      title: "Dataset Upload",
-      description: "Upload your raw dataset through our intelligent data ingestion system",
+      title: "Data Ingestion",
+      description: "Upload and explore tabular datasets in a secure educational environment",
       icon: CircleStackIcon,
       color: "from-blue-500 to-cyan-600",
       bgColor: "from-blue-50 to-cyan-50"
     },
     {
       id: 2,
-      title: "26 Robust Metrics",
-      description: "Calculate comprehensive data quality metrics including completeness, consistency, accuracy",
+      title: "Data Quality Assessment",
+      description: "Learn to evaluate data quality with 26+ automated metrics and comprehensive analysis",
       icon: BeakerIcon,
       color: "from-emerald-500 to-teal-600",
       bgColor: "from-emerald-50 to-teal-50"
     },
     {
       id: 3,
-      title: "Deep Learning Analysis",
-      description: "Advanced ML models analyze metrics to identify patterns and anomalies",
+      title: "Data Preprocessing",
+      description: "Master cleaning, transformation, and feature engineering techniques with guided workflows",
       icon: CpuChipIcon,
       color: "from-purple-500 to-indigo-600",
       bgColor: "from-purple-50 to-indigo-50"
     },
     {
       id: 4,
-      title: "Quality Score",
-      description: "Generate comprehensive data quality score with detailed metric breakdown",
+      title: "Model Selection",
+      description: "Explore various ML algorithms and understand their appropriate use cases",
       icon: CheckCircleIcon,
       color: "from-orange-500 to-red-600",
       bgColor: "from-orange-50 to-red-50"
     },
     {
       id: 5,
-      title: "AI Enhancement Insights",
-      description: "N8N agent provides intelligent recommendations for data improvement",
+      title: "Model Training & Testing",
+      description: "Train models with automated hyperparameter tuning and performance evaluation",
       icon: SparklesIcon,
       color: "from-pink-500 to-rose-600",
       bgColor: "from-pink-50 to-rose-50"
     },
     {
       id: 6,
-      title: "Secure Storage",
-      description: "Processed data and insights securely stored in optimized database",
+      title: "Results & Deployment",
+      description: "Analyze model performance and learn deployment concepts in a hands-on environment",
       icon: ClockIcon,
       color: "from-slate-500 to-gray-600",
       bgColor: "from-slate-50 to-gray-50"
     }
   ];
 
-  const visualizationTypes = [
-    { name: "Bar Charts", icon: ChartBarIcon, color: "from-blue-500 to-blue-600" },
-    { name: "Line Charts", icon: ArrowRightIcon, color: "from-emerald-500 to-emerald-600" },
-    { name: "Pie Charts", icon: ChartPieIcon, color: "from-purple-500 to-purple-600" },
-    { name: "Area Charts", icon: PresentationChartBarIcon, color: "from-orange-500 to-orange-600" },
-    { name: "Histograms", icon: Squares2X2Icon, color: "from-pink-500 to-pink-600" },
-    { name: "Scatter Plots", icon: SparklesIcon, color: "from-cyan-500 to-cyan-600" },
-    { name: "Box Plots", icon: BeakerIcon, color: "from-indigo-500 to-indigo-600" },
-    { name: "Bubble Charts", icon: CircleStackIcon, color: "from-teal-500 to-teal-600" },
-    { name: "Radar Charts", icon: EyeIcon, color: "from-rose-500 to-rose-600" }
+  const learningFeatures = [
+    { name: "Interactive Tutorials", icon: ChartBarIcon, color: "from-blue-500 to-blue-600" },
+    { name: "Collaborative Notes", icon: ArrowRightIcon, color: "from-emerald-500 to-emerald-600" },
+    { name: "Digital Whiteboard", icon: ChartPieIcon, color: "from-purple-500 to-purple-600" },
+    { name: "Visual Analytics", icon: PresentationChartBarIcon, color: "from-orange-500 to-orange-600" },
+    { name: "Project Templates", icon: Squares2X2Icon, color: "from-pink-500 to-pink-600" },
+    { name: "Automated Workflows", icon: SparklesIcon, color: "from-cyan-500 to-cyan-600" },
+    { name: "Performance Metrics", icon: BeakerIcon, color: "from-indigo-500 to-indigo-600" },
+    { name: "Team Collaboration", icon: CircleStackIcon, color: "from-teal-500 to-teal-600" },
+    { name: "Real-time Feedback", icon: EyeIcon, color: "from-rose-500 to-rose-600" }
   ];
 
   return (
     <div className="mb-12">
-      {/* Complete Analytics Flow Header */}
+      {/* ML Lifecycle Learning Header */}
       <div className="flex items-center gap-3 mb-8">
         <div className="w-1 h-8 bg-gradient-to-b from-purple-600 to-pink-600 rounded-full"></div>
-        <h2 className="text-2xl font-bold text-slate-800">Complete Analytics Flow</h2>
+        <h2 className="text-2xl font-bold text-slate-800">Complete ML Lifecycle Learning</h2>
         <BoltIcon className="w-6 h-6 text-purple-600" />
       </div>
 
-      {/* Flow Steps */}
+      {/* Lifecycle Steps */}
       <div className="mb-12">
         <div className="bg-white/80 backdrop-blur-sm border-2 border-slate-200 rounded-2xl p-8">
           {/* Desktop Flow - Horizontal */}
           <div className="hidden lg:block">
             <div className="grid grid-cols-6 gap-4 relative">
-              {flowSteps.map((step, index) => (
+              {lifecycleSteps.map((step, index) => (
                 <div key={step.id} className="relative">
                   <div className={`bg-gradient-to-br ${step.bgColor} rounded-2xl p-6 border-2 border-slate-100 hover:border-slate-200 transition-all duration-300 hover:scale-105 group h-full`}>
                     <div className={`flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r ${step.color} text-white mb-4 group-hover:scale-110 transition-transform duration-300 mx-auto`}>
@@ -116,7 +116,7 @@ const AnalyticsFlowSection = () => {
                   </div>
                   
                   {/* Arrow connector */}
-                  {index < flowSteps.length - 1 && (
+                  {index < lifecycleSteps.length - 1 && (
                     <div className="absolute top-1/2 -right-2 transform -translate-y-1/2 z-10">
                       <div className="w-6 h-6 bg-white rounded-full border-2 border-indigo-300 flex items-center justify-center shadow-lg">
                         <ArrowRightIcon className="w-3 h-3 text-indigo-600" />
@@ -131,7 +131,7 @@ const AnalyticsFlowSection = () => {
           {/* Mobile/Tablet Flow - Vertical */}
           <div className="lg:hidden">
             <div className="space-y-6">
-              {flowSteps.map((step, index) => (
+              {lifecycleSteps.map((step, index) => (
                 <div key={step.id} className="relative">
                   <div className={`bg-gradient-to-br ${step.bgColor} rounded-2xl p-6 border-2 border-slate-100 hover:border-slate-200 transition-all duration-300 group`}>
                     <div className="flex items-start gap-4">
@@ -151,7 +151,7 @@ const AnalyticsFlowSection = () => {
                   </div>
                   
                   {/* Vertical arrow connector */}
-                  {index < flowSteps.length - 1 && (
+                  {index < lifecycleSteps.length - 1 && (
                     <div className="flex justify-center py-3">
                       <div className="w-6 h-6 bg-white rounded-full border-2 border-indigo-300 flex items-center justify-center shadow-lg transform rotate-90">
                         <ArrowRightIcon className="w-3 h-3 text-indigo-600" />
@@ -163,19 +163,19 @@ const AnalyticsFlowSection = () => {
             </div>
           </div>
           
-          {/* Flow description */}
+          {/* Educational platform description */}
           <div className="mt-8 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
                 <SparklesIcon className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h4 className="text-lg font-bold text-slate-800 mb-2">AI-Powered Data Intelligence Pipeline</h4>
+                <h4 className="text-lg font-bold text-slate-800 mb-2">Educational ML Learning Platform</h4>
                 <p className="text-slate-700 leading-relaxed">
-                  Our advanced analytics pipeline combines <span className="font-bold text-indigo-700">26 robust data quality metrics</span> with 
-                  <span className="font-bold text-purple-700"> deep learning models</span> to provide comprehensive data analysis. 
-                  The intelligent N8N agent system delivers actionable insights for data enhancement, ensuring optimal data quality scores 
-                  and meaningful business intelligence.
+                  Smart Data Analyzer is a <span className="font-bold text-indigo-700">cloud-based educational platform</span> designed to help 
+                  students and early-stage practitioners understand the complete machine learning lifecycle. From raw data ingestion to model 
+                  deployment, our platform provides <span className="font-bold text-purple-700">hands-on learning experiences</span> with 
+                  interactive tools, collaborative features, and automated workflows in a no-code environment.
                 </p>
               </div>
             </div>
@@ -183,23 +183,23 @@ const AnalyticsFlowSection = () => {
         </div>
       </div>
 
-      {/* Visualization Types */}
+      {/* Learning Features */}
       <div>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-1 h-8 bg-gradient-to-b from-cyan-600 to-blue-600 rounded-full"></div>
-          <h3 className="text-xl font-bold text-slate-800">Advanced Data Visualizations</h3>
+          <h3 className="text-xl font-bold text-slate-800">Interactive Learning Tools</h3>
           <EyeIcon className="w-5 h-5 text-cyan-600" />
         </div>
         
         <div className="bg-white/80 backdrop-blur-sm border-2 border-slate-200 rounded-2xl p-8">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {visualizationTypes.map((viz, index) => (
+            {learningFeatures.map((feature, index) => (
               <div key={index} className="group">
                 <div className="p-6 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border-2 border-slate-200 hover:border-slate-300 transition-all duration-300 hover:scale-105 hover:shadow-lg text-center cursor-pointer">
-                  <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${viz.color} text-white flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300`}>
-                    <viz.icon className="w-6 h-6" />
+                  <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${feature.color} text-white flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300`}>
+                    <feature.icon className="w-6 h-6" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800">{viz.name}</h4>
+                  <h4 className="text-sm font-bold text-slate-800">{feature.name}</h4>
                 </div>
               </div>
             ))}
@@ -210,12 +210,13 @@ const AnalyticsFlowSection = () => {
               <div className="w-6 h-6 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-lg flex items-center justify-center">
                 <ChartBarIcon className="w-3 h-3 text-white" />
               </div>
-              <h4 className="text-base font-bold text-slate-800">Smart Visualization Engine</h4>
+              <h4 className="text-base font-bold text-slate-800">Collaborative Learning Environment</h4>
             </div>
             <p className="text-slate-700 text-sm leading-relaxed">
-              Choose from <span className="font-bold text-cyan-700">9 advanced chart types</span> with intelligent data mapping. 
-              Our visualization engine automatically suggests the best chart type based on your data characteristics, 
-              ensuring optimal insights and <span className="font-bold text-blue-700">interactive user experiences</span>.
+              Built for <span className="font-bold text-cyan-700">academic teamwork</span> and project development, 
+              our platform includes collaborative tools like integrated notes and digital whiteboard. 
+              Students can work together on <span className="font-bold text-blue-700">real-world ML projects</span> 
+              while learning essential data science workflows in a guided, interactive environment.
             </p>
           </div>
         </div>
@@ -257,22 +258,24 @@ export default function Dashboard() {
           </div>
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-              Smart Data Analyser
+              Smart Data Analyzer
             </h1>
             <div className="flex items-center gap-2 mt-1">
               <SparklesIcon className="w-4 h-4 text-indigo-600" />
               <p className="text-sm font-medium text-slate-600">
-                Powered by <span className="font-bold text-indigo-700">AI Agents</span> & <span className="font-bold text-purple-700">Deep Learning</span>
+                <span className="font-bold text-indigo-700">Educational ML Platform</span> for Complete Lifecycle Learning
               </p>
             </div>
           </div>
         </div>
         <div className="bg-white/70 backdrop-blur-sm border border-slate-200 rounded-2xl p-6">
-          <p className="text-xl text-slate-700 font-medium">
-            Welcome back, <span className="text-indigo-700 font-bold">{session?.user?.name || 'User'}</span>! 
+          <p className="text-xl text-slate-700 font-medium mb-3">
+            Welcome to your <span className="text-indigo-700 font-bold">ML Learning Journey</span>, {session?.user?.name || 'Student'}! 
           </p>
-          <p className="text-slate-600 mt-2">
-            Dive deep into your data with AI-powered insights and comprehensive multi-dimensional analysis.
+          <p className="text-slate-600 leading-relaxed">
+            The Smart Data Analyzer is a <span className="font-semibold text-emerald-700">cloud-based educational platform</span> designed to help students 
+            and early-stage practitioners understand and practice the <span className="font-semibold text-purple-700">complete machine learning lifecycle</span> — 
+            from raw data ingestion to model deployment.
           </p>
         </div>
       </div>
@@ -281,7 +284,7 @@ export default function Dashboard() {
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-1 h-8 bg-gradient-to-b from-indigo-600 to-purple-600 rounded-full"></div>
-          <h2 className="text-2xl font-bold text-slate-800">Quick Actions</h2>
+          <h2 className="text-2xl font-bold text-slate-800">Start Your ML Journey</h2>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Link 
@@ -293,7 +296,7 @@ export default function Dashboard() {
                 <ArrowUpTrayIcon className="h-6 w-6" aria-hidden="true" />
               </div>
               <h3 className="text-base font-bold text-slate-800 mb-1">Upload Dataset</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">Upload and process your data with AI-powered preprocessing</p>
+              <p className="text-xs text-slate-600 leading-relaxed">Begin with data ingestion and learn quality assessment fundamentals</p>
             </div>
           </Link>
 
@@ -306,7 +309,7 @@ export default function Dashboard() {
                 <TableCellsIcon className="h-6 w-6" aria-hidden="true" />
               </div>
               <h3 className="text-base font-bold text-slate-800 mb-1">Explore Data</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">Interactive data exploration with intelligent filtering</p>
+              <p className="text-xs text-slate-600 leading-relaxed">Interactive exploration and learn data understanding techniques</p>
             </div>
           </Link>
 
@@ -318,21 +321,21 @@ export default function Dashboard() {
               <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 text-white mb-3 group-hover:scale-105 transition-transform duration-300">
                 <ChartBarIcon className="h-6 w-6" aria-hidden="true" />
               </div>
-              <h3 className="text-base font-bold text-slate-800 mb-1">Bar Analytics</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">Dynamic bar charts with AI-driven pattern recognition</p>
+              <h3 className="text-base font-bold text-slate-800 mb-1">Visualize Patterns</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">Create meaningful visualizations and discover data insights</p>
             </div>
           </Link>
 
           <Link 
-            href="/dashboard/pie-charts"
+            href="/dashboard/model-training"
             className="group relative block p-6 bg-white/80 backdrop-blur-sm rounded-xl border-2 border-slate-200 hover:border-purple-300 transition-all duration-300 hover:bg-white/90"
           >
             <div className="flex flex-col items-center text-center">
               <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 text-white mb-3 group-hover:scale-105 transition-transform duration-300">
-                <ChartPieIcon className="h-6 w-6" aria-hidden="true" />
+                <CpuChipIcon className="h-6 w-6" aria-hidden="true" />
               </div>
-              <h3 className="text-base font-bold text-slate-800 mb-1">Distribution Insights</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">Comprehensive pie charts with deep learning insights</p>
+              <h3 className="text-base font-bold text-slate-800 mb-1">Train Models</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">Learn ML algorithms and practice model training workflows</p>
             </div>
           </Link>
         </div>
@@ -342,7 +345,7 @@ export default function Dashboard() {
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-1 h-8 bg-gradient-to-b from-emerald-600 to-teal-600 rounded-full"></div>
-          <h2 className="text-2xl font-bold text-slate-800">Recent Datasets</h2>
+          <h2 className="text-2xl font-bold text-slate-800">Your Learning Projects</h2>
         </div>
         {isLoading ? (
           <div className="flex justify-center py-12">
@@ -373,13 +376,13 @@ export default function Dashboard() {
                         <div className="flex items-center gap-2">
                           <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
                           <p className="text-sm font-medium text-slate-700">
-                            {dataset.columns?.length || 0} columns
+                            {dataset.columns?.length || 0} features
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
                           <p className="text-sm font-medium text-slate-700">
-                            {dataset.data?.length || 0} rows
+                            {dataset.data?.length || 0} samples
                           </p>
                         </div>
                       </div>
@@ -395,24 +398,24 @@ export default function Dashboard() {
               <div className="w-16 h-16 bg-gradient-to-r from-slate-100 to-slate-200 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <ChartBarIcon className="w-8 h-8 text-slate-400" />
               </div>
-              <h3 className="text-lg font-bold text-slate-800 mb-2">No datasets yet</h3>
+              <h3 className="text-lg font-bold text-slate-800 mb-2">Ready to Start Learning?</h3>
               <p className="text-slate-600 mb-6 text-sm leading-relaxed">
-                Start your AI-powered data analysis journey by uploading your first dataset.
+                Begin your machine learning journey by uploading your first dataset. Practice the complete ML lifecycle from data ingestion to model deployment.
               </p>
               <Link 
                 href="/dashboard/upload"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-300 hover:scale-105"
               >
                 <ArrowUpTrayIcon className="w-4 h-4" aria-hidden="true" />
-                Upload Dataset
+                Start Learning
               </Link>
             </div>
           </div>
         )}
       </div>
 
-      {/* Analytics Flow Section */}
-      <AnalyticsFlowSection />
+      {/* ML Lifecycle Section */}
+      <MLLifecycleFlowSection />
     </div>
   );
 }

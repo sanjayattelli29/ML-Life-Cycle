@@ -2,8 +2,18 @@ from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler
 import numpy as np
 import pandas as pd
-from utils.metrics import calculate_anomaly_detection_metrics, get_model_performance_summary
-from utils.preprocessing import preprocess_data
+try:
+    from utils.metrics import calculate_anomaly_detection_metrics, get_model_performance_summary
+    from utils.preprocessing import preprocess_data
+except ImportError as e:
+    print(f"Warning: Could not import utils modules: {e}")
+    # Define fallback functions
+    def calculate_anomaly_detection_metrics(y_true, y_pred, scores):
+        return {'accuracy': 0.0, 'precision': 0.0, 'recall': 0.0, 'f1_score': 0.0}
+    def get_model_performance_summary(metrics, task_type):
+        return "Performance summary not available"
+    def preprocess_data(df, features, target=None, preprocessing_steps=None):
+        return df, None, None
 
 def train_model(dataframe, features, hyperparams=None):
     """
@@ -49,12 +59,28 @@ def train_model(dataframe, features, hyperparams=None):
     # Prepare features
     X = processed_df[features]
     
-    # Train the model
-    model = IsolationForest(**default_params)
+    # Ensure all data is numeric and handle any remaining issues
+    for feature in features:
+        if feature in X.columns:
+            # Convert to numeric, coerce errors to NaN
+            X[feature] = pd.to_numeric(X[feature], errors='coerce')
     
-    # Fit and predict in one step
-    anomaly_labels = model.fit_predict(X)
-    anomaly_scores = model.decision_function(X)
+    # Fill any remaining NaN values
+    X = X.fillna(X.mean())
+    
+    # Ensure we have enough data points
+    if len(X) < 2:
+        raise ValueError("Not enough data points for anomaly detection. Need at least 2 samples.")
+    
+    # Train the model
+    try:
+        model = IsolationForest(**default_params)
+        
+        # Fit and predict in one step
+        anomaly_labels = model.fit_predict(X)
+        anomaly_scores = model.decision_function(X)
+    except Exception as e:
+        raise ValueError(f"Failed to train Isolation Forest model: {str(e)}")
     
     # Create true labels (for demonstration, assume all points are normal)
     # In real scenarios, you might have some known anomalies
@@ -68,7 +94,16 @@ def train_model(dataframe, features, hyperparams=None):
         y_true[anomaly_scores <= anomaly_threshold] = -1
     
     # Calculate metrics
-    metrics = calculate_anomaly_detection_metrics(y_true, anomaly_labels, anomaly_scores)
+    try:
+        metrics = calculate_anomaly_detection_metrics(y_true, anomaly_labels, anomaly_scores)
+    except Exception as e:
+        # Fallback metrics if calculation fails
+        metrics = {
+            'accuracy': 0.0,
+            'precision': 0.0,
+            'recall': 0.0,
+            'f1_score': 0.0
+        }
     
     # Add model-specific information
     metrics['model_type'] = 'isolation_forest'
@@ -108,18 +143,23 @@ def train_model(dataframe, features, hyperparams=None):
     except:
         pass
     
-    # Add sample results (first 100 samples for preview)
-    sample_size = min(100, len(X))
+    # Add sample results (ALL samples for complete preview)
+    # Changed from limiting to 100 samples to include all data points
+    sample_size = len(X)  # Use all samples instead of limiting to 100
     anomaly_preview = pd.DataFrame({
         'sample_index': range(sample_size),
-        'anomaly_score': anomaly_scores[:sample_size].tolist(),
-        'is_anomaly': (anomaly_labels[:sample_size] == -1).tolist(),
-        'anomaly_label': anomaly_labels[:sample_size].tolist()
+        'anomaly_score': anomaly_scores.tolist(),
+        'is_anomaly': (anomaly_labels == -1).tolist(),
+        'anomaly_label': anomaly_labels.tolist(),
+        'anomaly': anomaly_labels.tolist()  # Add anomaly column for consistency with frontend
     })
     
-    # Add original feature values for preview
-    for feature in features[:5]:  # Limit to first 5 features
-        anomaly_preview[feature] = X[feature].iloc[:sample_size].tolist()
+    # Add original feature values for preview (all features)
+    for feature in features:  # Include all features, not just first 5
+        if feature in X.columns:
+            feature_values = X[feature]
+            # Ensure we convert to list properly
+            anomaly_preview[feature] = [float(val) if pd.notna(val) and val is not None else 0.0 for val in feature_values]
     
     metrics['anomaly_preview'] = anomaly_preview.to_dict(orient='records')
     
@@ -130,17 +170,25 @@ def train_model(dataframe, features, hyperparams=None):
         
         feature_analysis = {}
         for feature in features:
-            if np.sum(anomaly_mask) > 0 and np.sum(normal_mask) > 0:
-                anomaly_values = X[feature][anomaly_mask]
-                normal_values = X[feature][normal_mask]
-                
-                feature_analysis[feature] = {
-                    'anomaly_mean': float(np.mean(anomaly_values)),
-                    'normal_mean': float(np.mean(normal_values)),
-                    'anomaly_std': float(np.std(anomaly_values)),
-                    'normal_std': float(np.std(normal_values)),
-                    'difference_in_means': float(np.mean(anomaly_values) - np.mean(normal_values))
-                }
+            if np.sum(anomaly_mask) > 0 and np.sum(normal_mask) > 0 and feature in X.columns:
+                try:
+                    anomaly_values = X[feature][anomaly_mask]
+                    normal_values = X[feature][normal_mask]
+                    
+                    # Convert to numpy arrays to avoid Series issues
+                    anomaly_array = anomaly_values.values if hasattr(anomaly_values, 'values') else anomaly_values
+                    normal_array = normal_values.values if hasattr(normal_values, 'values') else normal_values
+                    
+                    feature_analysis[feature] = {
+                        'anomaly_mean': float(np.mean(anomaly_array)),
+                        'normal_mean': float(np.mean(normal_array)),
+                        'anomaly_std': float(np.std(anomaly_array)),
+                        'normal_std': float(np.std(normal_array)),
+                        'difference_in_means': float(np.mean(anomaly_array) - np.mean(normal_array))
+                    }
+                except Exception as e:
+                    # Skip this feature if there's an issue
+                    continue
         
         metrics['feature_analysis'] = feature_analysis
     
@@ -182,20 +230,27 @@ def estimate_feature_importance(model, X, features):
         Dictionary of feature importances
     """
     try:
-        baseline_scores = model.decision_function(X)
+        # Convert to numpy array if it's a DataFrame
+        X_array = X.values if hasattr(X, 'values') else X
+        baseline_scores = model.decision_function(X_array)
         feature_importance = {}
         
         for i, feature in enumerate(features):
-            # Create a copy of X with this feature permuted
-            X_permuted = X.copy()
-            X_permuted.iloc[:, i] = np.random.permutation(X.iloc[:, i])
-            
-            # Calculate new scores
-            permuted_scores = model.decision_function(X_permuted)
-            
-            # Importance is the change in mean absolute score
-            importance = np.mean(np.abs(baseline_scores - permuted_scores))
-            feature_importance[feature] = float(importance)
+            try:
+                # Create a copy of X with this feature permuted
+                X_permuted = X_array.copy()
+                np.random.shuffle(X_permuted[:, i])
+                
+                # Calculate new scores
+                permuted_scores = model.decision_function(X_permuted)
+                
+                # Importance is the change in mean absolute score
+                importance = np.mean(np.abs(baseline_scores - permuted_scores))
+                feature_importance[feature] = float(importance)
+            except Exception as e:
+                # Skip this feature if there's an issue
+                feature_importance[feature] = 0.0
+                continue
         
         # Normalize importance scores
         total_importance = sum(feature_importance.values())
@@ -208,7 +263,8 @@ def estimate_feature_importance(model, X, features):
         # Sort by importance
         return dict(sorted(feature_importance.items(), key=lambda x: x[1], reverse=True))
         
-    except Exception:
+    except Exception as e:
+        print(f"Warning: Could not calculate feature importance: {e}")
         return None
 
 def get_model_info():

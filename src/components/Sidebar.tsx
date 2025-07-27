@@ -26,7 +26,6 @@ import {
   Radar,
   BarChartBig,
   TrendingUp,
-  BarChart4,
   Zap,
   Target,
   Star,
@@ -44,11 +43,6 @@ const mainNavigation = [
   { name: 'Feature Importance', href: '/dashboard/feature-importance', icon: Star },
   { name: 'Model Training', href: '/dashboard/model-training', icon: Settings },
   { name: 'AI Analysis', href: '/dashboard/ai-analysis', icon: Brain },
-
-  { name: 'Knowledge', href: '/dashboard/knowledge', icon: Brain },
-  { name: 'Metrics Guide', href: '/dashboard/metrics-guide', icon: BarChart4  },
-  { name: 'Notes', href: '/dashboard/notes', icon: ClipboardCheck },
- 
 ];
 
 const chartNavigation = [

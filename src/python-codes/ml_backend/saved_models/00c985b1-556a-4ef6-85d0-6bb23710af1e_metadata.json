@@ -1,0 +1,1049 @@
+{
+  "model_id": "00c985b1-556a-4ef6-85d0-6bb23710af1e",
+  "model_name": "kmeans",
+  "task_type": "clustering",
+  "model_variant": null,
+  "features": [
+    "Prev_Sem_Result",
+    "CGPA",
+    "Academic_Performance",
+    "IQ",
+    "Placement_encoded"
+  ],
+  "target": null,
+  "hyperparams": {
+    "n_clusters": 3,
+    "max_iter": 300,
+    "random_state": 42
+  },
+  "original_hyperparams": {
+    "n_clusters": 3,
+    "max_iter": 300,
+    "random_state": 42,
+    "task_type": "clustering"
+  },
+  "metrics": {
+    "silhouette_score": 0.2968753730208666,
+    "davies_bouldin_score": 1.2545033314759604,
+    "num_clusters": 3,
+    "cluster_sizes": {
+      "0": 3739,
+      "1": 4653,
+      "2": 1609
+    },
+    "model_type": "kmeans",
+    "hyperparameters": {
+      "n_clusters": 3,
+      "init": "k-means++",
+      "n_init": 10,
+      "max_iter": 300,
+      "tol": 0.0001,
+      "random_state": 42,
+      "algorithm": "lloyd"
+    },
+    "feature_count": 5,
+    "total_samples": 10001,
+    "inertia": 26780.539431122463,
+    "n_iter": 11,
+    "cluster_centers": {
+      "cluster_0": {
+        "Prev_Sem_Result": -1.037871411149389,
+        "CGPA": -1.03368095406601,
+        "Academic_Performance": 0.014224453602181776,
+        "IQ": 0.002207334081937198,
+        "Placement_encoded": -0.41001153110725963
+      },
+      "cluster_1": {
+        "Prev_Sem_Result": 0.5794593245814902,
+        "CGPA": 0.5719311724166342,
+        "Academic_Performance": 0.00047674278091125325,
+        "IQ": -0.19677670921438858,
+        "Placement_encoded": -0.44595198385164914
+      },
+      "cluster_2": {
+        "Prev_Sem_Result": 0.7371002484435134,
+        "CGPA": 0.7491255153043465,
+        "Academic_Performance": -0.03444205338033355,
+        "IQ": 0.5637972789303299,
+        "Placement_encoded": 2.242393881428862
+      }
+    },
+    "cluster_wcss": [
+      10166.93179596178,
+      11615.656492527341,
+      4997.951142633359
+    ],
+    "cluster_preview": [
+      {
+        "sample_index": 0,
+        "cluster": 0,
+        "Prev_Sem_Result": -0.7685061170443437,
+        "CGPA": -1.0164769950069703,
+        "Academic_Performance": 0.9010944816193623,
+        "IQ": 0.5683005639669251,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 1,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.6120910889646227,
+        "CGPA": -1.716788836820495,
+        "Academic_Performance": 0.9010944816193623,
+        "IQ": -0.17868764468066156,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 2,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.7359200756685162,
+        "CGPA": -1.3627679494702376,
+        "Academic_Performance": 1.2783572096430493,
+        "IQ": 0.7176982056964424,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 3,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.6507876473095895,
+        "CGPA": -1.4243564407191764,
+        "Academic_Performance": 0.1465690255719885,
+        "IQ": 1.6887828769383049,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 4,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.2376043999247956,
+        "CGPA": 0.06862488259658314,
+        "Academic_Performance": 0.5238317535956755,
+        "IQ": -0.2533864655454202,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 5,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.8133131923584505,
+        "CGPA": -1.7552879181472563,
+        "Academic_Performance": 0.5238317535956755,
+        "IQ": -0.2533864655454202,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 6,
+        "cluster": 2,
+        "Prev_Sem_Result": -0.7143309353613905,
+        "CGPA": -0.7855828957851945,
+        "Academic_Performance": -0.2306937024516984,
+        "IQ": 1.7634816978030636,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 7,
+        "cluster": 2,
+        "Prev_Sem_Result": 0.9031852034582258,
+        "CGPA": 0.8921137069079856,
+        "Academic_Performance": 0.5238317535956755,
+        "IQ": 0.8670958474259597,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 8,
+        "cluster": 0,
+        "Prev_Sem_Result": -0.8768564804102514,
+        "CGPA": -0.9779779136802089,
+        "Academic_Performance": 1.2783572096430493,
+        "IQ": -0.5521817490044548,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 9,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.9418817618031933,
+        "CGPA": 0.7689869187795038,
+        "Academic_Performance": -0.6079564304753853,
+        "IQ": 0.6429993848316837,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 10,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.872227956782253,
+        "CGPA": 0.9998308236318835,
+        "Academic_Performance": -1.362481886522759,
+        "IQ": -0.47748292813969617,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 11,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.062599960466092,
+        "CGPA": -0.8394916485165396,
+        "Academic_Performance": 0.9010944816193623,
+        "IQ": -0.47748292813969617,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 12,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.8025741517613126,
+        "CGPA": 1.084508724803,
+        "Academic_Performance": 0.5238317535956755,
+        "IQ": 0.2695052805078904,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 13,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.8799672684512462,
+        "CGPA": 0.615040787841855,
+        "Academic_Performance": 0.1465690255719885,
+        "IQ": -2.1208569871643865,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 14,
+        "cluster": 0,
+        "Prev_Sem_Result": -0.4744122736225953,
+        "CGPA": -0.22380751350473543,
+        "Academic_Performance": 0.5238317535956755,
+        "IQ": -1.8967605245701107,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 15,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.2019075705079734,
+        "CGPA": -1.3858573593924153,
+        "Academic_Performance": -0.9852191584990722,
+        "IQ": -0.6268805698692135,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 16,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.005425049854994322,
+        "CGPA": -0.046771972644908524,
+        "Academic_Performance": 0.1465690255719885,
+        "IQ": -1.1497723159225242,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 17,
+        "cluster": 1,
+        "Prev_Sem_Result": 1.5532873836536696,
+        "CGPA": 1.8540887963830575,
+        "Academic_Performance": 1.6556199376667362,
+        "IQ": 0.34420410137264906,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 18,
+        "cluster": 2,
+        "Prev_Sem_Result": 0.46204443832560294,
+        "CGPA": 0.4226457699468406,
+        "Academic_Performance": 0.5238317535956755,
+        "IQ": -1.0003746741930069,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 19,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.3489544922188472,
+        "CGPA": -1.5705726387698358,
+        "Academic_Performance": 0.5238317535956755,
+        "IQ": -1.597965241111076,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 20,
+        "cluster": 2,
+        "Prev_Sem_Result": 0.6245699833744646,
+        "CGPA": 0.3611074730672976,
+        "Academic_Performance": -0.2306937024516984,
+        "IQ": 1.6140840560735463,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 21,
+        "cluster": 0,
+        "Prev_Sem_Result": -0.35832259858769505,
+        "CGPA": -0.3777034500729883,
+        "Academic_Performance": -0.9852191584990722,
+        "IQ": -0.2533864655454202,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 22,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.27630095826976236,
+        "CGPA": 0.47655452267818565,
+        "Academic_Performance": -1.362481886522759,
+        "IQ": 0.12010763877837309,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 23,
+        "cluster": 2,
+        "Prev_Sem_Result": 0.8257920867682923,
+        "CGPA": 1.2076355129314815,
+        "Academic_Performance": 0.5238317535956755,
+        "IQ": -1.597965241111076,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 24,
+        "cluster": 1,
+        "Prev_Sem_Result": -0.025532196820979226,
+        "CGPA": 0.19948160361205466,
+        "Academic_Performance": -0.6079564304753853,
+        "IQ": -0.6268805698692135,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 25,
+        "cluster": 1,
+        "Prev_Sem_Result": 1.1353645535280277,
+        "CGPA": 1.423119940748674,
+        "Academic_Performance": -1.362481886522759,
+        "IQ": 0.12010763877837309,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 26,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.7793562167543316,
+        "CGPA": 0.9690616751921121,
+        "Academic_Performance": 0.9010944816193623,
+        "IQ": -1.2991699576520415,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 27,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.369172698297683,
+        "CGPA": 0.676629279090794,
+        "Academic_Performance": -1.362481886522759,
+        "IQ": 0.4189029222374077,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 28,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.4340869205777746,
+        "CGPA": -1.7476081796296625,
+        "Academic_Performance": 0.1465690255719885,
+        "IQ": -0.7015793907339721,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 29,
+        "cluster": 1,
+        "Prev_Sem_Result": 1.2204969818869544,
+        "CGPA": 1.5462467288771549,
+        "Academic_Performance": -0.6079564304753853,
+        "IQ": -0.32808528641017887,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 30,
+        "cluster": 1,
+        "Prev_Sem_Result": -0.03327150848997313,
+        "CGPA": -0.03909223412731475,
+        "Academic_Performance": 0.1465690255719885,
+        "IQ": -0.029290002951144232,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 31,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.4882621022607285,
+        "CGPA": -1.1550134545400357,
+        "Academic_Performance": -0.2306937024516984,
+        "IQ": 2.0622769812620985,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 32,
+        "cluster": 0,
+        "Prev_Sem_Result": -0.12614324851789308,
+        "CGPA": -0.4469716798395209,
+        "Academic_Performance": -0.6079564304753853,
+        "IQ": -0.029290002951144232,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 33,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.016164090452132,
+        "CGPA": -0.8394916485165396,
+        "Academic_Performance": 0.9010944816193623,
+        "IQ": -1.1497723159225242,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 34,
+        "cluster": 2,
+        "Prev_Sem_Result": 0.9031852034582258,
+        "CGPA": 1.084508724803,
+        "Academic_Performance": -0.9852191584990722,
+        "IQ": 0.9417946682907183,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 35,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.7793562167543316,
+        "CGPA": 1.1614566930871264,
+        "Academic_Performance": 1.2783572096430493,
+        "IQ": -1.3738687785168002,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 36,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.4727834789227414,
+        "CGPA": -1.2550508327463397,
+        "Academic_Performance": 0.9010944816193623,
+        "IQ": 0.2695052805078904,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 37,
+        "cluster": 1,
+        "Prev_Sem_Result": 1.383022526935816,
+        "CGPA": 1.2845834812156078,
+        "Academic_Performance": 0.9010944816193623,
+        "IQ": -2.1955558080291455,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 38,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.3179972455428737,
+        "CGPA": -1.2627305712639334,
+        "Academic_Performance": 1.6556199376667362,
+        "IQ": -1.4485675993815588,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 39,
+        "cluster": 1,
+        "Prev_Sem_Result": 1.0734500601760808,
+        "CGPA": 0.9690616751921121,
+        "Academic_Performance": -0.2306937024516984,
+        "IQ": 0.19480645964313176,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 40,
+        "cluster": 0,
+        "Prev_Sem_Result": -0.24997223522178727,
+        "CGPA": -0.4777408282792924,
+        "Academic_Performance": -1.739744614546446,
+        "IQ": 0.8670958474259597,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 41,
+        "cluster": 0,
+        "Prev_Sem_Result": -0.745288182037364,
+        "CGPA": -0.9317990938358537,
+        "Academic_Performance": 1.6556199376667362,
+        "IQ": 0.19480645964313176,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 42,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.403129673901801,
+        "CGPA": -1.6090717200965972,
+        "Academic_Performance": 1.2783572096430493,
+        "IQ": -0.1039888238159029,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 43,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.3644331155568343,
+        "CGPA": -1.3165891296258827,
+        "Academic_Performance": -1.362481886522759,
+        "IQ": -0.32808528641017887,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 44,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.547176866684531,
+        "CGPA": 0.8613445584682141,
+        "Academic_Performance": -1.739744614546446,
+        "IQ": -1.6726640619758348,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 45,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.1137754132209014,
+        "CGPA": 0.4303757028338303,
+        "Academic_Performance": 0.1465690255719885,
+        "IQ": -0.7762782115987309,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 46,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.5424372839436817,
+        "CGPA": -1.8784147062757377,
+        "Academic_Performance": -1.739744614546446,
+        "IQ": -0.47748292813969617,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 47,
+        "cluster": 1,
+        "Prev_Sem_Result": -0.03327150848997313,
+        "CGPA": -0.03909223412731475,
+        "Academic_Performance": 0.1465690255719885,
+        "IQ": -0.029290002951144232,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 48,
+        "cluster": 1,
+        "Prev_Sem_Result": -0.03327150848997313,
+        "CGPA": -0.03909223412731475,
+        "Academic_Performance": 0.1465690255719885,
+        "IQ": -0.029290002951144232,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 49,
+        "cluster": 1,
+        "Prev_Sem_Result": -0.03327150848997313,
+        "CGPA": -0.03909223412731475,
+        "Academic_Performance": 0.1465690255719885,
+        "IQ": -0.029290002951144232,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 50,
+        "cluster": 2,
+        "Prev_Sem_Result": 0.7406596584093655,
+        "CGPA": 0.4226457699468406,
+        "Academic_Performance": 0.5238317535956755,
+        "IQ": 0.34420410137264906,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 51,
+        "cluster": 1,
+        "Prev_Sem_Result": -0.03327150848997313,
+        "CGPA": -0.03909223412731475,
+        "Academic_Performance": 0.1465690255719885,
+        "IQ": -0.029290002951144232,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 52,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.15247197156586817,
+        "CGPA": 0.22257101353423234,
+        "Academic_Performance": -1.739744614546446,
+        "IQ": -0.7762782115987309,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 53,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.6894842056545563,
+        "CGPA": -1.616751458614191,
+        "Academic_Performance": 1.6556199376667362,
+        "IQ": 0.7176982056964424,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 54,
+        "cluster": 2,
+        "Prev_Sem_Result": 1.4836335786327293,
+        "CGPA": 1.5077978419197902,
+        "Academic_Performance": -0.2306937024516984,
+        "IQ": 1.1658911308849944,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 55,
+        "cluster": 2,
+        "Prev_Sem_Result": 1.4991122019707157,
+        "CGPA": 1.3692613823867248,
+        "Academic_Performance": -0.9852191584990722,
+        "IQ": 1.016493489155477,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 56,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.6864844767264117,
+        "CGPA": 0.8459348870636306,
+        "Academic_Performance": -1.362481886522759,
+        "IQ": -0.9256758533282482,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 57,
+        "cluster": 1,
+        "Prev_Sem_Result": 1.5687660069916574,
+        "CGPA": 1.8156399094256919,
+        "Academic_Performance": -0.2306937024516984,
+        "IQ": -0.32808528641017887,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 58,
+        "cluster": 2,
+        "Prev_Sem_Result": 1.1276252418590347,
+        "CGPA": 1.0075607565188736,
+        "Academic_Performance": -0.2306937024516984,
+        "IQ": 0.34420410137264906,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 59,
+        "cluster": 2,
+        "Prev_Sem_Result": 1.1895397352109818,
+        "CGPA": 0.869024296985808,
+        "Academic_Performance": -1.362481886522759,
+        "IQ": 1.0911923100202356,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 60,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.1911685299108349,
+        "CGPA": 0.03785573415681167,
+        "Academic_Performance": 0.1465690255719885,
+        "IQ": -0.5521817490044548,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 61,
+        "cluster": 0,
+        "Prev_Sem_Result": -0.8304206103962908,
+        "CGPA": -1.1011047018086908,
+        "Academic_Performance": 0.5238317535956755,
+        "IQ": -0.17868764468066156,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 62,
+        "cluster": 1,
+        "Prev_Sem_Result": -0.03327150848997313,
+        "CGPA": -0.03909223412731475,
+        "Academic_Performance": 0.1465690255719885,
+        "IQ": -0.029290002951144232,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 63,
+        "cluster": 0,
+        "Prev_Sem_Result": -0.745288182037364,
+        "CGPA": -1.0010673236023866,
+        "Academic_Performance": -0.9852191584990722,
+        "IQ": -1.2991699576520415,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 64,
+        "cluster": 2,
+        "Prev_Sem_Result": 0.41560856831164367,
+        "CGPA": 0.38419688298947535,
+        "Academic_Performance": -0.6079564304753853,
+        "IQ": 0.9417946682907183,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 65,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.3489544922188472,
+        "CGPA": -1.555162967365252,
+        "Academic_Performance": -1.362481886522759,
+        "IQ": 1.5393852352087876,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 66,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.016164090452132,
+        "CGPA": -0.8240819771119561,
+        "Academic_Performance": 1.6556199376667362,
+        "IQ": -0.1039888238159029,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 67,
+        "cluster": 0,
+        "Prev_Sem_Result": -0.2035363652078273,
+        "CGPA": -0.5624187294504089,
+        "Academic_Performance": -0.2306937024516984,
+        "IQ": 1.1658911308849944,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 68,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.1090358304800527,
+        "CGPA": -1.0626558148513254,
+        "Academic_Performance": -0.6079564304753853,
+        "IQ": 0.4189029222374077,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 69,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.2608223349317759,
+        "CGPA": 0.007086585717040197,
+        "Academic_Performance": -1.362481886522759,
+        "IQ": -0.7015793907339721,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 70,
+        "cluster": 1,
+        "Prev_Sem_Result": 1.5610266953226628,
+        "CGPA": 1.1691364316047204,
+        "Academic_Performance": -1.739744614546446,
+        "IQ": 0.4189029222374077,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 71,
+        "cluster": 2,
+        "Prev_Sem_Result": 0.8799672684512462,
+        "CGPA": 1.1614566930871264,
+        "Academic_Performance": 0.9010944816193623,
+        "IQ": 1.7634816978030636,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 72,
+        "cluster": 2,
+        "Prev_Sem_Result": 0.5626554900225175,
+        "CGPA": 0.6920389504953773,
+        "Academic_Performance": -1.362481886522759,
+        "IQ": -0.029290002951144232,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 73,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.2376043999247956,
+        "CGPA": -0.06986138256708622,
+        "Academic_Performance": -0.6079564304753853,
+        "IQ": 1.7634816978030636,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 74,
+        "cluster": 1,
+        "Prev_Sem_Result": -0.12614324851789308,
+        "CGPA": -0.0005931528005535795,
+        "Academic_Performance": 1.6556199376667362,
+        "IQ": -2.942544016676732,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 75,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.294779310535894,
+        "CGPA": -1.2011922743843908,
+        "Academic_Performance": -0.2306937024516984,
+        "IQ": 0.9417946682907183,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 76,
+        "cluster": 2,
+        "Prev_Sem_Result": 1.4449370202877632,
+        "CGPA": 1.4154402022310795,
+        "Academic_Performance": -1.362481886522759,
+        "IQ": 0.12010763877837309,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 77,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.0548606487970988,
+        "CGPA": -1.1088346346956803,
+        "Academic_Performance": 1.6556199376667362,
+        "IQ": -0.32808528641017887,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 78,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.6585269589785827,
+        "CGPA": -1.3474084724350501,
+        "Academic_Performance": 1.2783572096430493,
+        "IQ": 0.12010763877837309,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 79,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.8877065801202394,
+        "CGPA": 0.6920389504953773,
+        "Academic_Performance": -1.362481886522759,
+        "IQ": -2.1955558080291455,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 80,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.3334758688808608,
+        "CGPA": -1.401267030796999,
+        "Academic_Performance": 0.1465690255719885,
+        "IQ": -0.2533864655454202,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 81,
+        "cluster": 0,
+        "Prev_Sem_Result": -0.5750233253195092,
+        "CGPA": -0.7009551889834742,
+        "Academic_Performance": 0.5238317535956755,
+        "IQ": 0.4189029222374077,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 82,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.906184932386371,
+        "CGPA": -1.6860196883807235,
+        "Academic_Performance": 0.1465690255719885,
+        "IQ": 1.6887828769383049,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 83,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.4805227905917346,
+        "CGPA": -1.1472835216530457,
+        "Academic_Performance": -0.6079564304753853,
+        "IQ": -0.5521817490044548,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 84,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.341215180549854,
+        "CGPA": -1.0626558148513254,
+        "Academic_Performance": -1.739744614546446,
+        "IQ": -0.9256758533282482,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 85,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.8055738806894572,
+        "CGPA": -1.562892900252242,
+        "Academic_Performance": -1.362481886522759,
+        "IQ": -0.5521817490044548,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 86,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.52395893167755,
+        "CGPA": 0.8997934454255794,
+        "Academic_Performance": 1.6556199376667362,
+        "IQ": 1.016493489155477,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 87,
+        "cluster": 2,
+        "Prev_Sem_Result": 1.2282362935559477,
+        "CGPA": 1.3769411209043187,
+        "Academic_Performance": 1.6556199376667362,
+        "IQ": 0.34420410137264906,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 88,
+        "cluster": 0,
+        "Prev_Sem_Result": -0.567284013650516,
+        "CGPA": -0.3700237115553945,
+        "Academic_Performance": 0.1465690255719885,
+        "IQ": -0.5521817490044548,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 89,
+        "cluster": 1,
+        "Prev_Sem_Result": 1.3675439035978283,
+        "CGPA": 1.7309620082545756,
+        "Academic_Performance": 0.9010944816193623,
+        "IQ": 0.5683005639669251,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 90,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.1864289471699863,
+        "CGPA": -1.555162967365252,
+        "Academic_Performance": -0.9852191584990722,
+        "IQ": 0.12010763877837309,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 91,
+        "cluster": 0,
+        "Prev_Sem_Result": -0.7530274937063572,
+        "CGPA": -0.6470464362521291,
+        "Academic_Performance": 0.5238317535956755,
+        "IQ": 1.0911923100202356,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 92,
+        "cluster": 0,
+        "Prev_Sem_Result": -1.4340869205777746,
+        "CGPA": -1.239641161341756,
+        "Academic_Performance": 1.2783572096430493,
+        "IQ": -0.7762782115987309,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 93,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.3846513216356694,
+        "CGPA": 0.7073984275305649,
+        "Academic_Performance": -0.6079564304753853,
+        "IQ": -0.32808528641017887,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 94,
+        "cluster": 1,
+        "Prev_Sem_Result": -0.3892798452636686,
+        "CGPA": -0.09295079248926347,
+        "Academic_Performance": 0.5238317535956755,
+        "IQ": -0.4027841072749375,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 95,
+        "cluster": 2,
+        "Prev_Sem_Result": 0.3614333866286898,
+        "CGPA": 0.6227707207288448,
+        "Academic_Performance": 0.5238317535956755,
+        "IQ": -1.597965241111076,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 96,
+        "cluster": 2,
+        "Prev_Sem_Result": 0.9341424501342,
+        "CGPA": 1.276903742698014,
+        "Academic_Performance": 1.6556199376667362,
+        "IQ": 0.34420410137264906,
+        "Placement_encoded": 2.242393881428854
+      },
+      {
+        "sample_index": 97,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.09829678988291496,
+        "CGPA": 0.130213373845522,
+        "Academic_Performance": 1.2783572096430493,
+        "IQ": 0.2695052805078904,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 98,
+        "cluster": 1,
+        "Prev_Sem_Result": 0.41560856831164367,
+        "CGPA": 0.03785573415681167,
+        "Academic_Performance": -0.9852191584990722,
+        "IQ": 0.045408817913614424,
+        "Placement_encoded": -0.4459519838516505
+      },
+      {
+        "sample_index": 99,
+        "cluster": 1,
+        "Prev_Sem_Result": 1.6074625653366235,
+        "CGPA": 1.223045184336066,
+        "Academic_Performance": -1.739744614546446,
+        "IQ": -0.2533864655454202,
+        "Placement_encoded": -0.4459519838516505
+      }
+    ],
+    "cluster_statistics": {
+      "cluster_0": {
+        "size": 3739,
+        "percentage": 37.38626137386261,
+        "feature_means": {
+          "Prev_Sem_Result": -1.0380862754979487,
+          "CGPA": -1.033790535218119,
+          "Academic_Performance": 0.01610614583552769,
+          "IQ": 0.002994911335416351,
+          "Placement_encoded": -0.4100019187903975
+        },
+        "feature_stds": {
+          "Prev_Sem_Result": 0.5012552320528145,
+          "CGPA": 0.5065589378799571,
+          "Academic_Performance": 1.0445906779010503,
+          "IQ": 1.0126566371592758,
+          "Placement_encoded": 0.3088354106903743
+        }
+      },
+      "cluster_1": {
+        "size": 4653,
+        "percentage": 46.525347465253475,
+        "feature_means": {
+          "Prev_Sem_Result": 0.57928439379781,
+          "CGPA": 0.5716741579746077,
+          "Academic_Performance": -0.0010323695229054388,
+          "IQ": -0.19736681609327603,
+          "Placement_encoded": -0.4459519838516505
+        },
+        "feature_stds": {
+          "Prev_Sem_Result": 0.6222507267024276,
+          "CGPA": 0.6280357301101229,
+          "Academic_Performance": 0.9615799617638211,
+          "IQ": 0.8891867688828857,
+          "Placement_encoded": 0.0
+        }
+      },
+      "cluster_2": {
+        "size": 1609,
+        "percentage": 16.088391160883912,
+        "feature_means": {
+          "Prev_Sem_Result": 0.7371002484435135,
+          "CGPA": 0.7491255153043463,
+          "Academic_Performance": -0.034442053380333564,
+          "IQ": 0.5637972789303299,
+          "Placement_encoded": 2.2423938814288538
+        },
+        "feature_stds": {
+          "Prev_Sem_Result": 0.7034597253747171,
+          "CGPA": 0.6997590146534377,
+          "Academic_Performance": 1.003079019697008,
+          "IQ": 1.0571153142964438,
+          "Placement_encoded": 4.442272758287909e-16
+        }
+      }
+    },
+    "performance_summary": {
+      "model_type": "clustering",
+      "overall_performance": "Poor",
+      "key_metrics": {
+        "silhouette_score": "0.297",
+        "num_clusters": 3
+      }
+    },
+    "preprocessing": {
+      "feature_encoders": true,
+      "scaled_features": true
+    }
+  },
+  "created_at": "2025-07-27T10:27:41.821841",
+  "csv_url": null
+}

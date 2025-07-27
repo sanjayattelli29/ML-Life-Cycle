@@ -115,7 +115,7 @@ const handleWelcomeClick = () => {
 
   return (
     <>
-      {/* Welcome Text Bubble */}
+      Welcome Text Bubble
       {showWelcomeText && !isOpen && (
         <div
           onClick={handleWelcomeClick}
@@ -137,30 +137,30 @@ const handleWelcomeClick = () => {
             transition: 'all 0.3s ease',
             fontFamily: 'system-ui, -apple-system, sans-serif',
           }}
-          onMouseEnter={(e) => {
-            const target = e.target as HTMLDivElement;
-            target.style.transform = 'scale(1.05)';
-            target.style.backgroundColor = '#0056b3';
-          }}
-          onMouseLeave={(e) => {
-            const target = e.target as HTMLDivElement;
-            target.style.transform = 'scale(1)';
-            target.style.backgroundColor = '#007bff';
-          }}
+          // onMouseEnter={(e) => {
+          //   const target = e.target as HTMLDivElement;
+          //   target.style.transform = 'scale(1.05)';
+          //   target.style.backgroundColor = '#0056b3';
+          // }}
+          // onMouseLeave={(e) => {
+          //   const target = e.target as HTMLDivElement;
+          //   target.style.transform = 'scale(1)';
+          //   target.style.backgroundColor = '#007bff';
+          // }}
         >
-          👋 Hey! Need help?
+          {/* 👋 Hey! Need help? */}
           {/* Speech bubble tail */}
           <div
-            style={{
-              position: 'absolute',
-              bottom: '-8px',
-              right: '20px',
-              width: '0',
-              height: '0',
-              borderLeft: '8px solid transparent',
-              borderRight: '8px solid transparent',
-              borderTop: '8px solid #007bff',
-            }}
+            // style={{
+            //   position: 'absolute',
+            //   bottom: '-8px',
+            //   right: '20px',
+            //   width: '0',
+            //   height: '0',
+            //   borderLeft: '8px solid transparent',
+            //   borderRight: '8px solid transparent',
+            //   borderTop: '8px solid #007bff',
+            // }}
           />
         </div>
       )}

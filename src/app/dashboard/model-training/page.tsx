@@ -499,6 +499,45 @@ export default function ModelTraining() {
                       </p>
                     </div>
                   )}
+
+                  {/* Unsupervised Learning Option */}
+                  <div className="mt-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-bold">🧠</span>
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h5 className="font-semibold text-yellow-900 mb-2">
+                          Don&apos;t want to predict a specific column?
+                        </h5>
+                        <p className="text-sm text-yellow-800 mb-3">
+                          Use <strong>Unsupervised Learning</strong> to find hidden patterns, group similar data, 
+                          or detect anomalies without selecting a target column.
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <a
+                            href={`/dashboard/unsupervised-learning?dataset=${selectedDataset.id}`}
+                            className="inline-flex items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm font-medium"
+                          >
+                            <Star className="w-4 h-4 mr-2" />
+                            Explore Clustering & Anomaly Detection
+                          </a>
+                          <div className="flex items-center space-x-4 text-xs text-yellow-700">
+                            <span className="flex items-center">
+                              <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                              Find Groups
+                            </span>
+                            <span className="flex items-center">
+                              <span className="w-2 h-2 bg-orange-500 rounded-full mr-1"></span>
+                              Detect Outliers
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Search and filters for all rows view */}

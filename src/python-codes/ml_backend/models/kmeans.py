@@ -2,8 +2,18 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 import numpy as np
 import pandas as pd
-from utils.metrics import calculate_clustering_metrics, get_model_performance_summary
-from utils.preprocessing import preprocess_data
+try:
+    from utils.metrics import calculate_clustering_metrics, get_model_performance_summary
+    from utils.preprocessing import preprocess_data
+except ImportError as e:
+    print(f"Warning: Could not import utils modules: {e}")
+    # Define fallback functions
+    def calculate_clustering_metrics(X, labels):
+        return {'silhouette_score': 0.0, 'calinski_harabasz_score': 0.0, 'davies_bouldin_score': 0.0}
+    def get_model_performance_summary(metrics, task_type):
+        return "Performance summary not available"
+    def preprocess_data(df, features, target=None, preprocessing_steps=None):
+        return df, None, None
 
 def train_model(dataframe, features, hyperparams=None):
     """
@@ -28,11 +38,19 @@ def train_model(dataframe, features, hyperparams=None):
         'max_iter': 300,
         'tol': 1e-4,
         'random_state': 42,
-        'algorithm': 'auto'
+        'algorithm': 'lloyd'  # Changed from 'auto' to 'lloyd' for compatibility
     }
     
     # Update with provided hyperparameters
     default_params.update(hyperparams)
+    
+    # Validate and fix algorithm parameter for compatibility
+    if 'algorithm' in default_params and default_params['algorithm'] == 'auto':
+        default_params['algorithm'] = 'lloyd'  # Use 'lloyd' instead of deprecated 'auto'
+    
+    # Ensure algorithm is valid
+    if 'algorithm' in default_params and default_params['algorithm'] not in ['lloyd', 'elkan']:
+        default_params['algorithm'] = 'lloyd'
     
     # Preprocess data
     processed_df, feature_encoders, _ = preprocess_data(
@@ -48,17 +66,44 @@ def train_model(dataframe, features, hyperparams=None):
     # Prepare features
     X = processed_df[features]
     
+    # Ensure all data is numeric and handle any remaining issues
+    for feature in features:
+        if feature in X.columns:
+            # Convert to numeric, coerce errors to NaN
+            X[feature] = pd.to_numeric(X[feature], errors='coerce')
+    
+    # Fill any remaining NaN values
+    X = X.fillna(X.mean())
+    
+    # Ensure we have enough data points
+    if len(X) < 2:
+        raise ValueError("Not enough data points for clustering. Need at least 2 samples.")
+    
     # Auto-determine number of clusters if not specified
     if 'n_clusters' not in hyperparams:
         optimal_k = find_optimal_clusters(X, max_k=min(10, len(X)//2))
         default_params['n_clusters'] = optimal_k
     
+    # Ensure n_clusters is not greater than number of samples
+    default_params['n_clusters'] = min(default_params['n_clusters'], len(X) - 1)
+    
     # Train the model
-    model = KMeans(**default_params)
-    cluster_labels = model.fit_predict(X)
+    try:
+        model = KMeans(**default_params)
+        cluster_labels = model.fit_predict(X)
+    except Exception as e:
+        raise ValueError(f"Failed to train KMeans model: {str(e)}")
     
     # Calculate metrics
-    metrics = calculate_clustering_metrics(X, cluster_labels)
+    try:
+        metrics = calculate_clustering_metrics(X.values if hasattr(X, 'values') else X, cluster_labels)
+    except Exception as e:
+        # Fallback metrics if calculation fails
+        metrics = {
+            'silhouette_score': 0.0,
+            'calinski_harabasz_score': 0.0,
+            'davies_bouldin_score': 0.0
+        }
     
     # Add model-specific information
     metrics['model_type'] = 'kmeans'
@@ -85,23 +130,29 @@ def train_model(dataframe, features, hyperparams=None):
         cluster_points = X[cluster_labels == i]
         if len(cluster_points) > 0:
             center = model.cluster_centers_[i]
-            wcss = np.sum((cluster_points - center) ** 2)
-            cluster_wcss.append(float(wcss))
+            # Convert to numpy array to avoid pandas Series issues
+            cluster_points_array = cluster_points.values if hasattr(cluster_points, 'values') else cluster_points
+            wcss = float(np.sum((cluster_points_array - center) ** 2))
+            cluster_wcss.append(wcss)
         else:
             cluster_wcss.append(0.0)
     
     metrics['cluster_wcss'] = cluster_wcss
     
-    # Add cluster assignments to dataframe (first 100 samples for preview)
-    sample_size = min(100, len(X))
+    # Add cluster assignments to dataframe (ALL samples for complete preview)
+    # Changed from limiting to 100 samples to include all data points
+    sample_size = len(X)  # Use all samples instead of limiting to 100
     cluster_preview = pd.DataFrame({
         'sample_index': range(sample_size),
-        'cluster': cluster_labels[:sample_size].tolist()
+        'cluster': cluster_labels.tolist()
     })
     
-    # Add original feature values for preview
-    for feature in features[:5]:  # Limit to first 5 features to avoid large response
-        cluster_preview[feature] = X[feature].iloc[:sample_size].tolist()
+    # Add original feature values for preview (all features)
+    for feature in features:  # Include all features, not just first 5
+        if feature in X.columns:
+            feature_values = X[feature]
+            # Ensure we convert to list properly
+            cluster_preview[feature] = [float(val) if pd.notna(val) and val is not None else 0.0 for val in feature_values]
     
     metrics['cluster_preview'] = cluster_preview.to_dict(orient='records')
     
@@ -116,11 +167,11 @@ def train_model(dataframe, features, hyperparams=None):
                 'size': int(len(cluster_data)),
                 'percentage': float(len(cluster_data) / len(X) * 100),
                 'feature_means': {
-                    feature: float(cluster_data[feature].mean()) 
+                    feature: float(cluster_data[feature].mean()) if feature in cluster_data.columns else 0.0
                     for feature in features
                 },
                 'feature_stds': {
-                    feature: float(cluster_data[feature].std()) 
+                    feature: float(cluster_data[feature].std()) if feature in cluster_data.columns else 0.0
                     for feature in features
                 }
             }
@@ -153,20 +204,34 @@ def find_optimal_clusters(X, max_k=10, method='elbow'):
     if len(X) < 4:
         return 2
     
-    max_k = min(max_k, len(X) - 1)
+    max_k = min(max_k, len(X) - 1, 10)  # Cap at 10 for performance
+    if max_k < 2:
+        return 2
+        
     inertias = []
     
-    for k in range(1, max_k + 1):
-        kmeans = KMeans(n_clusters=k, random_state=42, n_init=5)
-        kmeans.fit(X)
-        inertias.append(kmeans.inertia_)
-    
-    # Find elbow using rate of change
-    if len(inertias) >= 3:
-        diffs = np.diff(inertias)
-        diff_ratios = diffs[:-1] / diffs[1:]
-        optimal_k = np.argmax(diff_ratios) + 2  # +2 because we start from k=1 and take diff
-        return min(optimal_k, max_k)
+    try:
+        for k in range(1, max_k + 1):
+            kmeans = KMeans(n_clusters=k, random_state=42, n_init=5, algorithm='lloyd')
+            kmeans.fit(X)
+            inertias.append(kmeans.inertia_)
+        
+        # Find elbow using rate of change
+        if len(inertias) >= 3:
+            diffs = np.diff(inertias)
+            # Avoid division by zero
+            diff_ratios = []
+            for i in range(len(diffs) - 1):
+                if diffs[i+1] != 0:
+                    diff_ratios.append(diffs[i] / diffs[i+1])
+                else:
+                    diff_ratios.append(0)
+            
+            if diff_ratios:
+                optimal_k = np.argmax(diff_ratios) + 2  # +2 because we start from k=1 and take diff
+                return min(optimal_k, max_k)
+    except Exception as e:
+        print(f"Warning: Could not determine optimal clusters: {e}")
     
     return 3  # Default fallback
 

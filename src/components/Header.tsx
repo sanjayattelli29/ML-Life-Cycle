@@ -11,18 +11,19 @@ import {
   ArrowRightOnRectangleIcon,
   ChartBarIcon,
   Bars3Icon,
-  XMarkIcon
+  XMarkIcon,
+  WrenchScrewdriverIcon
 } from '@heroicons/react/24/outline';
-import { useRouter } from 'next/navigation';
 
 export default function Header() {
   const { data: session, status } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
   const [profileImage, setProfileImage] = useState('');
   const [userName, setUserName] = useState('');
   const dropdownRef = useRef(null);
-  const router = useRouter();
+  const toolsDropdownRef = useRef(null);
 
 
   useEffect(() => {
@@ -40,6 +41,9 @@ export default function Header() {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
+      }
+      if (toolsDropdownRef.current && !toolsDropdownRef.current.contains(event.target)) {
+        setToolsDropdownOpen(false);
       }
     }
 
@@ -101,7 +105,7 @@ export default function Header() {
            <button
       type="button"
       className="-m-2.5 inline-flex items-center justify-center rounded-xl p-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 transition-all duration-200"
-      onClick={() => router.push('/profile')}
+      onClick={() => setMobileMenuOpen(true)}
     >
       <span className="sr-only">Open main menu</span>
       <Bars3Icon className="h-6 w-6" />
@@ -136,6 +140,73 @@ export default function Header() {
                 <span className="relative z-10">Dashboard</span>
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-50 to-indigo-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
               </Link>
+
+              {/* Tools Dropdown */}
+              <div className="relative" ref={toolsDropdownRef}>
+                <button
+                  type="button"
+                  className="flex items-center space-x-2 px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900 transition-all duration-200 rounded-lg hover:bg-slate-50/80 group"
+                  onClick={() => setToolsDropdownOpen(!toolsDropdownOpen)}
+                  aria-expanded={toolsDropdownOpen}
+                  aria-haspopup="true"
+                >
+                  <WrenchScrewdriverIcon className="w-4 h-4" />
+                  <span className="relative z-10">Tools</span>
+                  <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${toolsDropdownOpen ? 'rotate-180' : ''}`} />
+                  <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-slate-50 to-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                </button>
+
+                {/* Tools Dropdown Menu */}
+                {toolsDropdownOpen && (
+                  <div className="absolute left-0 mt-3 w-56 bg-white rounded-2xl border border-slate-200/60 backdrop-blur-xl z-50 overflow-hidden shadow-xl">
+                    <div className="absolute inset-0 bg-white/95 backdrop-blur-xl"></div>
+                    
+                    {/* Menu Items */}
+                    <div className="relative py-2">
+                      <Link
+                        href="/dashboard/knowledge"
+                        className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50/80 transition-all duration-200"
+                        onClick={() => setToolsDropdownOpen(false)}
+                      >
+                        <svg className="w-4 h-4 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                        Knowledge
+                      </Link>
+                      <Link
+                        href="/dashboard/notes"
+                        className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50/80 transition-all duration-200"
+                        onClick={() => setToolsDropdownOpen(false)}
+                      >
+                        <svg className="w-4 h-4 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Notes
+                      </Link>
+                      <Link
+                        href="/dashboard/metrics-guide"
+                        className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50/80 transition-all duration-200"
+                        onClick={() => setToolsDropdownOpen(false)}
+                      >
+                        <svg className="w-4 h-4 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        Metrics Guide
+                      </Link>
+                      <Link
+                        href="/dashboard/whiteboard"
+                        className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50/80 transition-all duration-200"
+                        onClick={() => setToolsDropdownOpen(false)}
+                      >
+                        <svg className="w-4 h-4 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                        Whiteboard
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* User Avatar Dropdown */}
               <div className="relative" ref={dropdownRef}>
@@ -340,6 +411,39 @@ export default function Header() {
                       >
                         Dashboard
                       </Link>
+                      
+                      {/* Tools Section in Mobile */}
+                      <div className="space-y-1 mt-4">
+                        <div className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tools</div>
+                        <Link
+                          href="/dashboard/knowledge"
+                          className="-mx-3 block rounded-xl px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50/80 transition-all duration-200"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Knowledge
+                        </Link>
+                        <Link
+                          href="/dashboard/notes"
+                          className="-mx-3 block rounded-xl px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50/80 transition-all duration-200"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Notes
+                        </Link>
+                        <Link
+                          href="/dashboard/metrics-guide"
+                          className="-mx-3 block rounded-xl px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50/80 transition-all duration-200"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Metrics Guide
+                        </Link>
+                        <Link
+                          href="/dashboard/whiteboard"
+                          className="-mx-3 block rounded-xl px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50/80 transition-all duration-200"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Whiteboard
+                        </Link>
+                      </div>
                       <Link
                         href="/profile"
                         className="-mx-3 block rounded-xl px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50/80 transition-all duration-200"

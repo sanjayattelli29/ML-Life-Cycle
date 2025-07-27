@@ -479,13 +479,13 @@ export default function UploadDataset() {
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                    Smart Data Analyser
+                    Smart Data Analyzer
                   </h1>
                   <div className="flex items-center space-x-2 text-sm text-slate-600">
-                    <span className="font-medium">powered by</span>
+                    <span className="font-medium">Educational ML Platform</span>
                     <div className="flex items-center space-x-1">
                       <CpuChipIcon className="h-4 w-4 text-blue-500" />
-                      <span className="font-semibold text-blue-600">AI Agents</span>
+                      <span className="font-semibold text-blue-600">Learning Hub</span>
                     </div>
                   </div>
                 </div>
@@ -526,28 +526,15 @@ export default function UploadDataset() {
       {/* Main Content */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-12 text-center">
-          <h2 className="text-4xl font-bold text-slate-800 mb-4">Upload Your Dataset</h2>
+          <h2 className="text-4xl font-bold text-slate-800 mb-4">Upload Your Learning Dataset</h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            Transform your raw data into actionable insights with our advanced AI-powered analytics platform. 
-            Upload your CSV file to begin intelligent data exploration and visualization.
+            Begin your machine learning journey by uploading your dataset. Our educational platform will guide you through 
+            the complete ML lifecycle.
           </p>
           <p className="text-sm text-slate-500 mt-2">
     Maximum file size: <strong>10MB</strong>.
   </p>
-          <div className="mt-6 flex justify-center space-x-6 text-sm text-slate-500">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span>Automated Analysis</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-              <span>Smart Insights</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-              <span>Real-time Processing</span>
-            </div>
-          </div>
+      
         </div>
 
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 overflow-hidden">
@@ -589,7 +576,7 @@ export default function UploadDataset() {
                     {hasReachedUploadLimit() && (
                       <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
                         <p className="text-sm text-amber-800 font-medium">
-                          You've reached the free upload limit. Select a file to see pricing for additional storage.
+                          You&apos;ve reached the free upload limit. Select a file to see pricing for additional storage.
                         </p>
                       </div>
                     )}
@@ -720,7 +707,7 @@ export default function UploadDataset() {
                       ) : hasReachedUploadLimit() ? (
                         'Continue with Payment'
                       ) : (
-                        'Start AI Analysis'
+                        'Begin ML Learning Journey'
                       )}
                     </button>
                   </div>
@@ -748,11 +735,11 @@ export default function UploadDataset() {
               <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl">
                 <CpuChipIcon className="h-8 w-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold text-slate-800">AI-Powered Analysis</h3>
+              <h3 className="text-xl font-semibold text-slate-800">Educational ML Tools</h3>
             </div>
             <p className="text-slate-600 leading-relaxed">
-              Our advanced AI algorithms automatically detect patterns, outliers, and relationships in your data, 
-              providing instant insights without manual configuration.
+              Access interactive learning modules that teach machine learning concepts through hands-on practice. 
+              Learn data preprocessing, feature engineering, and model selection with guided tutorials.
             </p>
           </div>
 
@@ -761,11 +748,11 @@ export default function UploadDataset() {
               <div className="p-3 bg-gradient-to-br from-green-100 to-green-200 rounded-xl">
                 <DocumentChartBarIcon className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-xl font-semibold text-slate-800">Smart Visualizations</h3>
+              <h3 className="text-xl font-semibold text-slate-800">Interactive Visualizations</h3>
             </div>
             <p className="text-slate-600 leading-relaxed">
-              Generate interactive charts and graphs automatically based on your data structure. 
-              Our system chooses the most appropriate visualization for each data type.
+              Learn to create meaningful visualizations that tell your data&apos;s story. Practice with different chart types 
+              and understand when to use each visualization technique in your ML projects.
             </p>
           </div>
 
@@ -774,25 +761,25 @@ export default function UploadDataset() {
               <div className="p-3 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl">
                 <BeakerIcon className="h-8 w-8 text-purple-600" />
               </div>
-              <h3 className="text-xl font-semibold text-slate-800">Data Insights</h3>
+              <h3 className="text-xl font-semibold text-slate-800">Collaborative Learning</h3>
             </div>
             <p className="text-slate-600 leading-relaxed">
-              Discover hidden trends and correlations with our intelligent data mining capabilities. 
-              Get actionable recommendations based on statistical analysis.
+              Work together with classmates and instructors in a collaborative environment. Share insights, 
+              discuss findings, and learn from peer experiences throughout your ML learning journey.
             </p>
           </div>
         </div>
 
         {/* How it Works Section */}
         <div className="mt-20 text-center">
-          <h3 className="text-3xl font-bold text-slate-800 mb-12">How It Works</h3>
+          <h3 className="text-3xl font-bold text-slate-800 mb-12">Your ML Learning Journey</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="relative">
               <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mx-auto mb-4 shadow-lg">
                 1
               </div>
-              <h4 className="text-lg font-semibold text-slate-800 mb-2">Upload Data</h4>
-              <p className="text-slate-600">Upload your CSV file with just a few clicks</p>
+              <h4 className="text-lg font-semibold text-slate-800 mb-2">Upload Dataset</h4>
+              <p className="text-slate-600">Start by uploading your learning dataset</p>
               {/* Connector line */}
             </div>
             
@@ -800,8 +787,8 @@ export default function UploadDataset() {
               <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mx-auto mb-4 shadow-lg">
                 2
               </div>
-              <h4 className="text-lg font-semibold text-slate-800 mb-2">AI Processing</h4>
-              <p className="text-slate-600">Our AI analyzes patterns and data structure</p>
+              <h4 className="text-lg font-semibold text-slate-800 mb-2">Explore & Clean</h4>
+              <p className="text-slate-600">Learn data quality assessment and preprocessing</p>
               {/* Connector line */}
             </div>
             
@@ -809,8 +796,8 @@ export default function UploadDataset() {
               <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mx-auto mb-4 shadow-lg">
                 3
               </div>
-              <h4 className="text-lg font-semibold text-slate-800 mb-2">Generate Insights</h4>
-              <p className="text-slate-600">Automatic visualization and trend detection</p>
+              <h4 className="text-lg font-semibold text-slate-800 mb-2">Build Models</h4>
+              <p className="text-slate-600">Practice model selection and training techniques</p>
               {/* Connector line */}
             </div>
             
@@ -818,8 +805,8 @@ export default function UploadDataset() {
               <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mx-auto mb-4 shadow-lg">
                 4
               </div>
-              <h4 className="text-lg font-semibold text-slate-800 mb-2">Explore Results</h4>
-              <p className="text-slate-600">Interactive dashboard with actionable insights</p>
+              <h4 className="text-lg font-semibold text-slate-800 mb-2">Deploy & Share</h4>
+              <p className="text-slate-600">Learn deployment and share your learning progress</p>
             </div>
           </div>
         </div>
@@ -827,22 +814,22 @@ export default function UploadDataset() {
         {/* Footer CTA */}
         <div className="mt-20 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-12 text-center text-white shadow-2xl">
           <div className="max-w-3xl mx-auto">
-            <h3 className="text-3xl font-bold mb-4">Ready to Transform Your Data?</h3>
+            <h3 className="text-3xl font-bold mb-4">Ready to Start Your ML Learning Journey?</h3>
             <p className="text-xl text-blue-100 mb-8">
-              Join thousands of users who have discovered powerful insights in their data using our AI-powered platform.
+              Join students and educators worldwide who are mastering machine learning through hands-on practice and collaborative learning.
             </p>
             <div className="flex items-center justify-center space-x-8 text-blue-100">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span>Fast Processing</span>
+                <span>Interactive Learning</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                <span>Secure Upload</span>
+                <span>Educational Focus</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-pink-400 rounded-full"></div>
-                <span>Expert Support</span>
+                <span>Collaborative Environment</span>
               </div>
             </div>
           </div>

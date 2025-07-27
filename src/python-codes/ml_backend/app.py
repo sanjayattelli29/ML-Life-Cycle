@@ -183,6 +183,7 @@ def train_model():
             "model_variant": model_variant,
             "created_at": metadata["created_at"],
             "features": features,
+            "feature_columns": features,  # Add this for frontend compatibility
             "target": target
         }
         
@@ -373,38 +374,200 @@ def get_training_code(model_id):
         # Generate Python training code
         model_name = metadata.get('model_name', 'unknown')
         features = metadata.get('features', [])
-        target = metadata.get('target', 'target')
+        target = metadata.get('target')
         hyperparams = metadata.get('hyperparams', {})
+        task_type = metadata.get('task_type', 'classification')
         
-        # Generate code based on model type
-        if model_name == 'random_forest':
-            if metadata.get('task_type') == 'classification':
+        # Determine if this is supervised or unsupervised
+        is_unsupervised = model_name in ['kmeans', 'dbscan', 'isolation_forest']
+        
+        # Generate imports and model class based on model type
+        if model_name == 'kmeans':
+            model_import = "from sklearn.cluster import KMeans"
+            model_class = "KMeans"
+            metrics_import = "from sklearn.metrics import silhouette_score"
+        elif model_name == 'isolation_forest':
+            model_import = "from sklearn.ensemble import IsolationForest"
+            model_class = "IsolationForest"
+            metrics_import = "import numpy as np"
+        elif model_name == 'random_forest':
+            if task_type == 'classification':
                 model_import = "from sklearn.ensemble import RandomForestClassifier"
                 model_class = "RandomForestClassifier"
             else:
                 model_import = "from sklearn.ensemble import RandomForestRegressor"
                 model_class = "RandomForestRegressor"
+            metrics_import = "from sklearn.metrics import accuracy_score, classification_report, mean_squared_error, r2_score"
         elif model_name == 'logistic_regression':
             model_import = "from sklearn.linear_model import LogisticRegression"
             model_class = "LogisticRegression"
+            metrics_import = "from sklearn.metrics import accuracy_score, classification_report"
         elif model_name == 'linear_regression':
             model_import = "from sklearn.linear_model import LinearRegression"
             model_class = "LinearRegression"
+            metrics_import = "from sklearn.metrics import mean_squared_error, r2_score"
         else:
             model_import = f"# Import for {model_name}"
             model_class = model_name
+            metrics_import = "# Import metrics as needed"
         
         # Format hyperparameters
         hyperparam_str = ", ".join([f"{k}={repr(v)}" for k, v in hyperparams.items()])
         
-        training_code = f"""# Training Code for Model: {model_id}
+        if is_unsupervised:
+            # Generate unsupervised learning code
+            if model_name == 'kmeans':
+                training_code = f"""# K-Means Clustering Training Code for Model: {model_id}
+# Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+import pandas as pd
+import joblib
+{model_import}
+from sklearn.preprocessing import StandardScaler
+{metrics_import}
+import matplotlib.pyplot as plt
+
+# Load your dataset
+df = pd.read_csv('your_dataset.csv')
+
+# Define features (no target needed for clustering)
+features = {features}
+X = df[features]
+
+# Preprocess the data
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Initialize and train the model
+model = {model_class}({hyperparam_str})
+cluster_labels = model.fit_predict(X_scaled)
+
+# Add cluster labels to original dataframe
+df['cluster'] = cluster_labels
+
+# Evaluate clustering
+silhouette_avg = silhouette_score(X_scaled, cluster_labels)
+print(f"Silhouette Score: {{silhouette_avg:.4f}}")
+
+# Print cluster information
+unique_clusters = np.unique(cluster_labels)
+for cluster in unique_clusters:
+    cluster_size = np.sum(cluster_labels == cluster)
+    print(f"Cluster {{cluster}}: {{cluster_size}} points ({{cluster_size/len(X)*100:.1f}}%)")
+
+# Save the model and scaler
+joblib.dump(model, '{model_id}_kmeans.pkl')
+joblib.dump(scaler, '{model_id}_scaler.pkl')
+print("Model and scaler saved successfully!")
+
+# To load the model later:
+# loaded_model = joblib.load('{model_id}_kmeans.pkl')
+# loaded_scaler = joblib.load('{model_id}_scaler.pkl')
+# new_data_scaled = loaded_scaler.transform(new_data)
+# predictions = loaded_model.predict(new_data_scaled)
+
+# Visualize clusters (for 2D data)
+if len(features) >= 2:
+    plt.figure(figsize=(10, 8))
+    scatter = plt.scatter(X_scaled[:, 0], X_scaled[:, 1], c=cluster_labels, cmap='viridis')
+    plt.colorbar(scatter)
+    plt.title('K-Means Clustering Results')
+    plt.xlabel(features[0])
+    plt.ylabel(features[1])
+    plt.show()
+"""
+            elif model_name == 'isolation_forest':
+                training_code = f"""# Isolation Forest Anomaly Detection Training Code for Model: {model_id}
+# Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+import pandas as pd
+import joblib
+{model_import}
+from sklearn.preprocessing import StandardScaler
+{metrics_import}
+import matplotlib.pyplot as plt
+
+# Load your dataset
+df = pd.read_csv('your_dataset.csv')
+
+# Define features (no target needed for anomaly detection)
+features = {features}
+X = df[features]
+
+# Preprocess the data
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Initialize and train the model
+model = {model_class}({hyperparam_str})
+anomaly_labels = model.fit_predict(X_scaled)
+anomaly_scores = model.decision_function(X_scaled)
+
+# Add anomaly information to original dataframe
+df['anomaly_label'] = anomaly_labels  # 1 = normal, -1 = anomaly
+df['anomaly_score'] = anomaly_scores
+df['is_anomaly'] = (anomaly_labels == -1)
+
+# Analyze results
+n_anomalies = np.sum(anomaly_labels == -1)
+total_points = len(X)
+anomaly_rate = n_anomalies / total_points * 100
+
+print(f"Total data points: {{total_points}}")
+print(f"Anomalies detected: {{n_anomalies}} ({{anomaly_rate:.2f}}%)")
+print(f"Normal points: {{total_points - n_anomalies}} ({{100 - anomaly_rate:.2f}}%)")
+
+# Show some anomaly examples
+print("\\nTop 5 most anomalous points:")
+anomaly_df = df[df['is_anomaly']].nsmallest(5, 'anomaly_score')
+print(anomaly_df[features + ['anomaly_score']])
+
+# Save the model and scaler
+joblib.dump(model, '{model_id}_isolation_forest.pkl')
+joblib.dump(scaler, '{model_id}_scaler.pkl')
+print("\\nModel and scaler saved successfully!")
+
+# To load the model later:
+# loaded_model = joblib.load('{model_id}_isolation_forest.pkl')
+# loaded_scaler = joblib.load('{model_id}_scaler.pkl')
+# new_data_scaled = loaded_scaler.transform(new_data)
+# predictions = loaded_model.predict(new_data_scaled)
+# scores = loaded_model.decision_function(new_data_scaled)
+
+# Visualize anomalies (for 2D data)
+if len(features) >= 2:
+    plt.figure(figsize=(12, 5))
+    
+    # Plot 1: Anomaly labels
+    plt.subplot(1, 2, 1)
+    colors = ['red' if label == -1 else 'blue' for label in anomaly_labels]
+    plt.scatter(X_scaled[:, 0], X_scaled[:, 1], c=colors, alpha=0.6)
+    plt.title('Anomaly Detection Results')
+    plt.xlabel(features[0])
+    plt.ylabel(features[1])
+    plt.legend(['Normal', 'Anomaly'])
+    
+    # Plot 2: Anomaly scores
+    plt.subplot(1, 2, 2)
+    scatter = plt.scatter(X_scaled[:, 0], X_scaled[:, 1], c=anomaly_scores, cmap='viridis')
+    plt.colorbar(scatter)
+    plt.title('Anomaly Scores')
+    plt.xlabel(features[0])
+    plt.ylabel(features[1])
+    
+    plt.tight_layout()
+    plt.show()
+"""
+        else:
+            # Generate supervised learning code (existing logic)
+            training_code = f"""# Training Code for Model: {model_id}
 # Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 import pandas as pd
 import joblib
 {model_import}
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report, mean_squared_error, r2_score
+{metrics_import}
 
 # Load your dataset
 df = pd.read_csv('your_dataset.csv')
@@ -431,11 +594,11 @@ model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 
 # Evaluate the model
-{'# Classification metrics' if metadata.get('task_type') == 'classification' else '# Regression metrics'}
-{'accuracy = accuracy_score(y_test, y_pred)' if metadata.get('task_type') == 'classification' else 'mse = mean_squared_error(y_test, y_pred)'}
-{'print(f"Accuracy: {{accuracy:.4f}}")' if metadata.get('task_type') == 'classification' else 'r2 = r2_score(y_test, y_pred)'}
-{'print(classification_report(y_test, y_pred))' if metadata.get('task_type') == 'classification' else 'print(f"MSE: {{mse:.4f}}")'}
-{'# ' if metadata.get('task_type') == 'classification' else 'print(f"R² Score: {{r2:.4f}}")'}
+{'# Classification metrics' if task_type == 'classification' else '# Regression metrics'}
+{'accuracy = accuracy_score(y_test, y_pred)' if task_type == 'classification' else 'mse = mean_squared_error(y_test, y_pred)'}
+{'print(f"Accuracy: {{accuracy:.4f}}")' if task_type == 'classification' else 'r2 = r2_score(y_test, y_pred)'}
+{'print(classification_report(y_test, y_pred))' if task_type == 'classification' else 'print(f"MSE: {{mse:.4f}}")'}
+{'# Additional metrics...' if task_type == 'classification' else 'print(f"R² Score: {{r2:.4f}}")'}
 
 # Save the model
 joblib.dump(model, '{model_id}.pkl')
