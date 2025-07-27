@@ -17,36 +17,53 @@ export async function GET() {
     }
 
     console.log('User authenticated:', session.user.id);
+    console.log('User ID type:', typeof session.user.id);
+    console.log('User ID length:', session.user.id.length);
 
-    // Try using native MongoDB client like the working datasets route
-    console.log('Using native MongoDB client...');
-    const client = await clientPromise;
-    const db = client.db(process.env.DB_NAME);
-    
-    console.log('Connected to database:', process.env.DB_NAME);
-    console.log('User ID for query:', session.user.id);
-    
-    // Query using native MongoDB client
-    const datasets = await db.collection('transformeddatasets')
-      .find({ userId: session.user.id })
-      .sort({ uploadedAt: -1 })
-      .toArray();
+    let formattedDatasets: Record<string, unknown>[] = [];
 
-    console.log('Native MongoDB query completed. Found datasets:', datasets.length);
+    // Get datasets metadata from MongoDB (this contains R2 URLs linked to user ID)
+    try {
+      console.log('Using native MongoDB client...');
+      const client = await clientPromise;
+      const db = client.db(process.env.DB_NAME);
+      
+      console.log('Connected to database:', process.env.DB_NAME);
+      console.log('User ID for query:', session.user.id);
+      
+      // First, let's see all datasets in the collection for debugging
+      const allDatasets = await db.collection('transformeddatasets').find({}).toArray();
+      console.log('All datasets in collection:', allDatasets.length);
+      console.log('All user IDs in collection:', allDatasets.map(d => d.userId));
+      
+      // Query using native MongoDB client
+      const datasets = await db.collection('transformeddatasets')
+        .find({ userId: session.user.id })
+        .sort({ uploadedAt: -1 })
+        .toArray();
 
-    // Format the response
-    const formattedDatasets = datasets.map((dataset: Record<string, unknown>) => ({
-      id: dataset._id,
-      originalName: dataset.originalDatasetName,
-      transformedName: dataset.transformedDatasetName,
-      url: dataset.r2Url,
-      fileSize: dataset.fileSize,
-      rowCount: (dataset.metadata as Record<string, unknown>)?.rowCount,
-      columnCount: (dataset.metadata as Record<string, unknown>)?.columnCount,
-      processingSteps: dataset.processingSteps,
-      uploadedAt: dataset.uploadedAt,
-      preprocessingReport: dataset.preprocessingReport
-    }));
+      console.log('Native MongoDB query completed. Found datasets:', datasets.length);
+
+      // Format the response
+      formattedDatasets = datasets.map((dataset: Record<string, unknown>) => ({
+        id: dataset._id,
+        originalName: dataset.originalDatasetName,
+        transformedName: dataset.transformedDatasetName,
+        url: dataset.r2Url,
+        fileSize: dataset.fileSize,
+        rowCount: (dataset.metadata as Record<string, unknown>)?.rowCount,
+        columnCount: (dataset.metadata as Record<string, unknown>)?.columnCount,
+        processingSteps: dataset.processingSteps,
+        uploadedAt: dataset.uploadedAt,
+        preprocessingReport: dataset.preprocessingReport
+      }));
+
+    } catch (mongoError) {
+      console.error('MongoDB query failed:', mongoError);
+      formattedDatasets = [];
+    }
+
+    console.log(`Total datasets found: ${formattedDatasets.length}`);
 
     return NextResponse.json({
       success: true,

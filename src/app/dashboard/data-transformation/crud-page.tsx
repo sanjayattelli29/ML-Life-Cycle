@@ -406,8 +406,8 @@ export default function CrudPage({ dataset, onBack }: CrudPageProps) {
       console.log("Row count:", data.length);
       console.log("Column count:", columns.length);
       
-      // Send JSON payload to upload API
-      const response = await fetch(`/api/transformed-datasets/upload`, {
+      // Send JSON payload to normalization upload API (R2-only, no MongoDB)
+      const response = await fetch(`/api/normalization-datasets/upload`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -421,9 +421,7 @@ export default function CrudPage({ dataset, onBack }: CrudPageProps) {
             "manual_transformation",
             `rows: ${data.length}`,
             `columns: ${columns.length}`
-          ],
-          replaceExisting: true,
-          oldDatasetId: dataset.id
+          ]
         }),
       });
       

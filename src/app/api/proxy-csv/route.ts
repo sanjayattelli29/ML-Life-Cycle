@@ -36,7 +36,14 @@ export async function GET(request: NextRequest) {
 
     // Validate that the URL is from our R2 storage
     console.log('Checking URL domain...');
-    if (!url.includes('r2.cloudflarestorage.com')) {
+    const validDomains = [
+      'r2.cloudflarestorage.com',
+      process.env.R2_CUSTOM_DOMAIN
+    ].filter(Boolean);
+    
+    const isValidDomain = validDomains.some(domain => url.includes(domain!));
+    
+    if (!isValidDomain) {
       console.log('Invalid URL domain:', url);
       return NextResponse.json({ error: 'Invalid URL domain' }, { status: 400 });
     }
@@ -44,15 +51,26 @@ export async function GET(request: NextRequest) {
     console.log('✓ URL validation passed');
     
     // Extract the object key from the URL
-    const urlParts = url.split('/');
-    const key = urlParts.slice(4).join('/'); // Skip https, empty, domain, bucket
+    let key = '';
+    
+    if (url.includes(`/${process.env.R2_BUCKET_NAME}/`)) {
+      // Extract everything after the bucket name
+      const bucketPath = `/${process.env.R2_BUCKET_NAME}/`;
+      const bucketIndex = url.indexOf(bucketPath);
+      key = url.substring(bucketIndex + bucketPath.length);
+    } else if (url.includes('.r2.cloudflarestorage.com/')) {
+      // Fallback for direct R2 URLs
+      const urlParts = url.split('/');
+      const domainIndex = urlParts.findIndex(part => part.includes('.r2.cloudflarestorage.com'));
+      key = urlParts.slice(domainIndex + 1).join('/');
+    }
     
     console.log('Extracted key:', key);
     console.log('Using bucket:', process.env.R2_BUCKET_NAME || 'my-datasets');
     
     // Fetch using S3 client with proper credentials
     const command = new GetObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME || 'my-datasets',
+      Bucket: process.env.R2_BUCKET_NAME!,
       Key: key,
     });
     

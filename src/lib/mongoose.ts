@@ -40,15 +40,18 @@ async function dbConnect() {
     
     const opts = {
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 30000,
-      socketTimeoutMS: 75000,
-      connectTimeoutMS: 30000,
-      maxIdleTimeMS: 30000,
+      serverSelectionTimeoutMS: 60000, // Increased from 30s to 60s
+      socketTimeoutMS: 120000, // Increased from 75s to 120s
+      connectTimeoutMS: 60000, // Increased from 30s to 60s
+      maxIdleTimeMS: 300000, // 5 minutes idle timeout
       heartbeatFrequencyMS: 10000,
       retryWrites: true,
+      bufferCommands: false, // Disable buffering to prevent timeout issues
+      bufferMaxEntries: 0, // Disable buffering completely
+      retryReads: true,
     };
 
-    // Disable mongoose buffering globally
+    // Disable mongoose buffering globally to prevent timeout issues
     mongoose.set('bufferCommands', false);
     mongoose.set('strictQuery', true);
     cached.promise = mongoose.connect(MONGODB_URI, opts);

@@ -63,35 +63,26 @@ export default function ModelTraining() {
   const [showModelConfig, setShowModelConfig] = useState(false);
   const [selectedTargetColumn, setSelectedTargetColumn] = useState<string>('');
 
-  // Fetch datasets from Feature Importance processed datasets
+  // Fetch datasets from Model Training R2 storage
   const fetchDatasets = React.useCallback(async () => {
     if (!session?.user?.id) return;
     
     setIsLoading(true);
     try {
-      const response = await fetch('/api/transformed-datasets', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      console.log('Fetching model-training datasets from R2 for user:', session.user.id);
+      const response = await fetch('/api/model-training-datasets');
 
       if (!response.ok) {
-        throw new Error('Failed to fetch datasets');
+        throw new Error('Failed to fetch model-training datasets');
       }
 
       const data = await response.json();
+      console.log('Model-training datasets response:', data);
       
-      // Filter datasets that have feature importance processing
-      const allDatasets = data.datasets || data || [];
-      const featureImportanceDatasets = allDatasets.filter((dataset: TransformedDataset) => 
-        dataset.processingSteps.includes('feature_importance_analysis')
-      );
-      
-      setDatasets(featureImportanceDatasets);
+      setDatasets(data.datasets || []);
       setError('');
     } catch (err) {
-      console.error('Error fetching datasets:', err);
+      console.error('Error fetching model-training datasets:', err);
       setError('Failed to load datasets. Please try again.');
       setDatasets([]);
     } finally {

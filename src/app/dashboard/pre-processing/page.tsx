@@ -195,6 +195,7 @@ export default function PreProcessing() {
   const [aiError, setAiError] = useState('');
   const [aiProgress, setAiProgress] = useState(0);
   const [isUploadingToTransformation, setIsUploadingToTransformation] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('');
 
   React.useEffect(() => {
     const fetchDatasets = async () => {
@@ -680,12 +681,13 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
     }
 
     setIsUploadingToTransformation(true);
+    setUploadStatus('Preparing dataset for upload...');
 
     try {
       // Get selected processing steps
       const selectedFactors = getSelectedFactorKeys();
       
-      console.log('About to upload dataset:', {
+      console.log('About to upload dataset to R2:', {
         csvDataLength: processedCSV.length,
         datasetName: currentDataset.name,
         selectedFactors,
@@ -695,13 +697,15 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
       // Ensure CSV data is properly formatted (remove any BOM or special characters)
       const cleanCsvData = processedCSV.replace(/^\ufeff/, ''); // Remove BOM if present
       
-      // Upload to R2 and save to MongoDB
-      const response = await fetch('/api/transformed-datasets/upload', {
+      setUploadStatus('Uploading to R2 cloud storage...');
+      
+      // Upload directly to R2 storage
+      const uploadPromise = fetch('/api/r2-datasets/upload', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include session cookies for authentication
+        credentials: 'include',
         body: JSON.stringify({
           csvData: cleanCsvData,
           originalDatasetName: currentDataset.name,
@@ -710,48 +714,88 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
         }),
       });
 
+      // Add a timeout to the entire upload operation
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Upload operation timed out after 2 minutes')), 120000)
+      );
+
+      const response = await Promise.race([uploadPromise, timeoutPromise]) as Response;
+
+      setUploadStatus('Verifying upload...');
+
       if (!response.ok) {
         // Try to get detailed error information
-        let errorMessage = 'Failed to upload dataset to cloud storage';
+        let errorMessage = 'Failed to upload dataset to R2 storage';
+        let errorDetails = '';
+        
         try {
           const errorData = await response.json();
-          errorMessage = errorData.error || errorData.details || errorMessage;
+          errorMessage = errorData.error || errorMessage;
+          errorDetails = errorData.details || '';
           console.error('Upload API error response:', errorData);
           
-          // Provide more specific error messages
-          if (errorMessage.includes('MongoDB connection is not ready')) {
-            errorMessage = 'Database connection issue - please try again in a moment';
+          // Provide more specific error messages based on common issues
+          if (errorMessage.includes('MongoDB') && errorMessage.includes('timeout')) {
+            errorMessage = 'Database connection timeout. This can happen with large datasets. Please try again.';
+          } else if (errorMessage.includes('buffering timed out')) {
+            errorMessage = 'Database operation timeout. Please wait a moment and try again.';
+          } else if (errorMessage.includes('connection')) {
+            errorMessage = 'Database connection issue. Please check your internet connection and try again.';
           } else if (errorMessage.includes('timeout')) {
-            errorMessage = 'Connection timeout - please check your internet and try again';
-          } else if (errorMessage.includes('Database connection failed')) {
-            errorMessage = 'Database error - please try again or contact support';
+            errorMessage = 'Operation timeout. Please try again or reduce dataset size.';
+          } else if (response.status === 500) {
+            errorMessage = 'Server error. Please try again in a moment.';
+          } else if (response.status === 413) {
+            errorMessage = 'Dataset too large. Please reduce the size and try again.';
+          } else if (response.status === 401) {
+            errorMessage = 'Authentication error. Please sign out and sign in again.';
           }
-        } catch {
+        } catch (jsonError) {
+          console.error('Failed to parse error response as JSON:', jsonError);
           // If JSON parsing fails, try to get text
           try {
             const errorText = await response.text();
             console.error('Upload API error text:', errorText);
             if (errorText.includes('timeout')) {
-              errorMessage = 'Database connection timeout - please try again';
+              errorMessage = 'Database operation timeout - please try again';
             } else if (errorText.includes('MongoDB')) {
-              errorMessage = 'Database error - please check your connection';
+              errorMessage = 'Database connection issue - please try again';
             } else if (errorText.includes('500')) {
               errorMessage = 'Server error - please try again in a moment';
             }
-          } catch {
-            console.error('Could not parse error response');
+          } catch (textError) {
+            console.error('Could not parse error response:', textError);
+            errorMessage = `Upload failed (Status: ${response.status}). Please try again.`;
           }
         }
-        throw new Error(errorMessage);
+        
+        throw new Error(errorMessage + (errorDetails ? ` (${errorDetails})` : ''));
       }
 
       const result = await response.json();
       
       if (result.success) {
-        toast.success('Dataset uploaded to cloud storage successfully!');
+        setUploadStatus('Upload completed successfully!');
         
-        // Navigate to Data Transformation page
-        window.location.href = '/dashboard/data-transformation';
+        if (result.database_save_failed) {
+          // Partial success - file uploaded but database save failed
+          toast.success('Dataset uploaded to cloud storage successfully!', {
+            duration: 4000
+          });
+          toast('Note: Database save had issues, but your file is safely stored in cloud storage.', {
+            duration: 6000,
+            icon: '⚠️'
+          });
+          console.warn('Database save failed but R2 upload succeeded:', result.error);
+        } else {
+          // Full success
+          toast.success('Dataset uploaded to cloud storage successfully!');
+        }
+        
+        // Navigate to Data Transformation page regardless
+        setTimeout(() => {
+          window.location.href = '/dashboard/data-transformation';
+        }, 1500);
       } else {
         throw new Error(result.error || 'Upload failed');
       }
@@ -760,6 +804,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
       toast.error(err instanceof Error ? err.message : 'Failed to upload dataset');
     } finally {
       setIsUploadingToTransformation(false);
+      setUploadStatus('');
     }
   };
 
@@ -1273,7 +1318,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
-                          Uploading to Cloud...
+                          {uploadStatus || 'Uploading to Cloud Storage...'}
                         </>
                       ) : (
                         <>

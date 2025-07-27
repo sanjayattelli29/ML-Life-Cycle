@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 import {
   Brain,
@@ -110,6 +111,8 @@ const ModelTrainingConfig: React.FC<ModelTrainingConfigProps> = ({
   selectedTarget,
   onBack
 }) => {
+  const { data: session } = useSession();
+  
   // State management
   const [selectedModel, setSelectedModel] = useState<string>('');
   const [testSize, setTestSize] = useState<number>(0.2);
@@ -522,6 +525,9 @@ const ModelTrainingConfig: React.FC<ModelTrainingConfigProps> = ({
       if (result.model_id) {
         try {
           console.log('Attempting to save model to cloud storage...');
+          console.log('Session:', session);
+          console.log('Dataset:', dataset);
+          
           const saveResponse = await fetch('http://localhost:5000/save', {
             method: 'POST',
             headers: {
@@ -529,12 +535,15 @@ const ModelTrainingConfig: React.FC<ModelTrainingConfigProps> = ({
             },
             body: JSON.stringify({
               model_id: result.model_id,
-              model_name: config.model_name
+              model_name: config.model_name,
+              user_id: session?.user?.id || 'unknown_user',
+              dataset_name: dataset.transformedName || dataset.originalName || 'unknown_dataset'
             })
           });
           
           if (saveResponse.ok) {
-            console.log('✅ Model saved to cloud storage successfully');
+            const saveResult = await saveResponse.json();
+            console.log('✅ Model saved to cloud storage successfully:', saveResult);
             toast.success('Model saved to cloud storage');
           } else {
             console.warn('⚠️ Failed to save model to cloud storage:', saveResponse.statusText);
@@ -1040,19 +1049,43 @@ const ModelTrainingConfig: React.FC<ModelTrainingConfigProps> = ({
         </div>
       </div>
 
-      {/* Training Results Section - Show after training is complete */}
-      {showResults && trainingResults && (
+      {/* Training Results Section - Show during training OR after training is complete */}
+      {(isTraining || showResults) && (
         <div className="mt-8 space-y-6">
           <div className="border-t border-gray-300 pt-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-              <CheckCircle className="w-6 h-6 mr-2 text-green-600" />
-              Training Results
-            </h2>
+            {!showResults && isTraining && (
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <Loader2 className="w-6 h-6 mr-2 text-blue-600 animate-spin" />
+                Model Training in Progress
+              </h2>
+            )}
+            
+            {showResults && trainingResults && (
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <CheckCircle className="w-6 h-6 mr-2 text-green-600" />
+                Training Results
+              </h2>
+            )}
             
             <ModelTrainingResults
-              results={trainingResults}
+              results={trainingResults || {
+                model_id: '',
+                metrics: {},
+                model_name: '',
+                created_at: '',
+                task_type: 'classification',
+                features: [],
+                target: selectedTarget
+              }}
               dataPreview={dataPreview}
               selectedTargetColumn={selectedTarget}
+              dataset={{
+                id: dataset.id,
+                transformedName: dataset.transformedName,
+                originalName: dataset.originalName
+              }}
+              userId={session?.user?.id}
+              isTraining={isTraining && !showResults}
             />
           </div>
         </div>

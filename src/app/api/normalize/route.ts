@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
       try {
         // Extract the object key from the URL
         const urlParts = datasetUrl.split('/');
-        const key = urlParts.slice(4).join('/'); // Skip https, empty, domain, bucket
+        const key = urlParts.slice(3).join('/'); // Skip https, empty, domain
         
         console.log('Extracted R2 key:', key);
         

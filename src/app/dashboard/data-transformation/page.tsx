@@ -46,16 +46,22 @@ export default function DataTransformation() {
     
     try {
       setIsRefreshing(true);
-      const response = await fetch('/api/transformed-datasets');
+      console.log('Fetching datasets from R2 for user:', session.user.id);
+      const response = await fetch('/api/r2-datasets');
       
       if (!response.ok) {
         throw new Error('Failed to fetch datasets');
       }
       
       const data = await response.json();
+      console.log('R2 API Response:', data);
+      console.log('Datasets received:', data.datasets);
+      console.log('Number of datasets:', data.datasets?.length || 0);
+      
       setDatasets(data.datasets || []);
       setError('');
     } catch (err) {
+      console.error('Fetch datasets error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch datasets');
       toast.error('Failed to load datasets');
     } finally {
@@ -67,6 +73,13 @@ export default function DataTransformation() {
   useEffect(() => {
     fetchDatasets();
   }, [fetchDatasets]);
+
+  // Add debugging effect to monitor datasets state changes
+  React.useEffect(() => {
+    console.log('Datasets state changed:', datasets);
+    console.log('Datasets length:', datasets.length);
+    console.log('Selected dataset:', selectedDataset);
+  }, [datasets, selectedDataset]);
 
   const handleDelete = async (datasetId: string) => {
     if (!confirm('Are you sure you want to delete this dataset?')) return;
@@ -206,14 +219,16 @@ export default function DataTransformation() {
                 <p className="text-gray-600 mt-1">Manage and access your preprocessed datasets stored in cloud storage</p>
               </div>
             </div>
-            <button
-              onClick={fetchDatasets}
-              disabled={isRefreshing}
-              className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={fetchDatasets}
+                disabled={isRefreshing}
+                className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -275,7 +290,9 @@ export default function DataTransformation() {
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex-1 min-w-0 mr-4">
-                            <p className="font-medium text-gray-800 truncate">{dataset.transformedName}</p>
+                            <div className="flex items-center">
+                              <p className="font-medium text-gray-800 truncate">{dataset.transformedName}</p>
+                            </div>
                             <p className="text-sm text-gray-500 truncate">From: {dataset.originalName}</p>
                           </div>
                           <div className="text-xs text-gray-400 flex-shrink-0">

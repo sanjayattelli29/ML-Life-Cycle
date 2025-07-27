@@ -19,8 +19,7 @@ import {
   BarChart3,
   TrendingUp,
   Loader2,
-  Sparkles,
-  CloudUpload
+  Sparkles
 } from 'lucide-react';
 
 interface TransformedDataset {
@@ -121,22 +120,19 @@ export default function FeatureImportance() {
     
     try {
       setIsRefreshing(true);
-      const response = await fetch('/api/transformed-datasets');
+      console.log('Fetching feature-importance datasets from R2 for user:', session.user.id);
+      const response = await fetch('/api/feature-importance-datasets');
       
       if (!response.ok) {
         throw new Error('Failed to fetch datasets');
       }
       
       const data = await response.json();
-      
-      // Filter datasets to show only those that haven't been processed by feature importance
-      const availableDatasets = (data.datasets || data || []).filter((dataset: TransformedDataset) => 
-        !dataset.processingSteps.includes('feature_importance_analysis')
-      );
-      
-      setDatasets(availableDatasets);
+      console.log('Feature-importance datasets response:', data);
+      setDatasets(data.datasets || []);
       setError('');
     } catch (err) {
+      console.error('Fetch feature-importance datasets error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch datasets');
       toast.error('Failed to load datasets');
     } finally {
@@ -149,24 +145,10 @@ export default function FeatureImportance() {
     fetchDatasets();
   }, [fetchDatasets]);
 
-  const handleDelete = async (datasetId: string) => {
-    if (!confirm('Are you sure you want to delete this dataset?')) return;
-
-    try {
-      const response = await fetch(`/api/transformed-datasets?id=${datasetId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete dataset');
-      }
-
-      setDatasets(datasets.filter(d => d.id !== datasetId));
-      toast.success('Dataset deleted successfully');
-    } catch (err) {
-      toast.error('Failed to delete dataset');
-      console.error('Delete error:', err);
-    }
+  const handleDelete = async (_datasetId: string) => {
+    // Disabled for R2-only storage - can be implemented later if needed
+    toast.error('Delete functionality temporarily disabled for R2-only storage');
+    return;
   };
 
   const handleDownload = async (dataset: TransformedDataset) => {
@@ -557,76 +539,62 @@ List only the top 3-4 most important feature names for prediction. Respond with 
     toast.success('CSV downloaded successfully!');
   };
 
-  // Upload to R2 and save to MongoDB
+  // Upload to R2 and save to model-training folder
   const uploadToCloudAndSave = async () => {
     if (!finalDatasetPreview || !selectedDataset) return;
     
     setIsUploadingToCloud(true);
     try {
-      // Create FormData for R2 upload
-      const formData = new FormData();
-      const blob = new Blob([finalDatasetPreview.csvContent], { type: 'text/csv' });
-      const fileName = `${selectedDataset.transformedName}_feature_importance_${Date.now()}.csv`;
-      formData.append('file', blob, fileName);
-      formData.append('userId', session?.user?.id || '');
+      console.log('🚀 SAVE TO MODEL TRAINING BUTTON CLICKED - Starting save to model-training folder');
       
-      // Upload to R2
-      const uploadResponse = await fetch('/api/cloudinary', {
+      // Save to R2 using the model-training datasets upload endpoint (R2-only, no MongoDB)
+      console.log('📤 Calling model-training upload API...');
+      const saveResponse = await fetch('/api/model-training-datasets/upload', {
         method: 'POST',
-        body: formData,
-      });
-      
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload to cloud storage');
-      }
-      
-      const uploadResult = await uploadResponse.json();
-      
-      // Save to MongoDB as transformed dataset
-      const saveResponse = await fetch('/api/transformed-datasets', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          originalName: selectedDataset.originalName,
-          transformedName: fileName.replace('.csv', ''),
-          url: uploadResult.url,
-          fileSize: blob.size,
-          rowCount: finalDatasetPreview.totalRows,
-          columnCount: finalDatasetPreview.headers.length,
+          csvData: finalDatasetPreview.csvContent,
+          originalDatasetName: selectedDataset.originalName || selectedDataset.transformedName,
+          transformedName: `${selectedDataset.transformedName}_feature_analysis_ready`,
           processingSteps: [
             ...(selectedDataset.processingSteps || []),
             'feature_importance_analysis',
             'target_encoding',
-            'feature_selection'
+            'feature_selection',
+            'model_training_ready'
           ],
-          userId: session?.user?.id,
+          selectedFeatures: selectedFeatures,
+          targetColumn: targetColumn,
           metadata: {
-            selectedFeatures,
-            targetColumn,
             originalColumns: columnMetadata.length,
             finalColumns: finalDatasetPreview.headers.length,
-            analysisType: columnMetadata.find(col => col.name === targetColumn)?.type === 'numeric' ? 'regression' : 'classification'
+            analysisType: columnMetadata.find(col => col.name === targetColumn)?.type === 'numeric' ? 'regression' : 'classification',
+            aiRecommendation: aiRecommendation
           }
-        }),
+        })
       });
       
       if (!saveResponse.ok) {
-        throw new Error('Failed to save dataset information');
+        throw new Error(`Failed to save to model-training folder: ${saveResponse.status} ${saveResponse.statusText}`);
       }
       
-      toast.success('Dataset saved to cloud successfully!');
+      const saveResult = await saveResponse.json();
+      console.log('Model-training save successful:', saveResult);
+      
+      toast.success('Dataset saved to Model Training folder successfully!');
       
       // Set saved state
       setIsSavedToCloud(true);
       
-      // Refresh datasets list
-      await fetchDatasets();
+      // Auto-redirect to model-training page after successful save
+      setTimeout(() => {
+        console.log('🚀 Auto-redirecting to model-training page...');
+        window.location.href = '/dashboard/model-training';
+      }, 2000); // Wait 2 seconds to show success message before redirecting
       
     } catch (err) {
-      console.error('Upload error:', err);
-      toast.error(err instanceof Error ? err.message : 'Failed to upload dataset');
+      console.error('Model-training save error:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to save to model training folder');
     } finally {
       setIsUploadingToCloud(false);
     }
@@ -749,16 +717,18 @@ List only the top 3-4 most important feature names for prediction. Respond with 
             <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
               <Database className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">No Datasets Available</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">No Feature Importance Datasets Available</h3>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              You need to have processed datasets to analyze feature importance. Start by processing a dataset in the Data Transformation section.
+              You need normalized datasets for feature importance analysis. Normalize your datasets and save them to feature importance storage in the Data Normalization section.
             </p>
             <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
               <span>Go to</span>
               <ArrowRight className="w-4 h-4" />
-              <span className="font-medium">Data Transformation</span>
+              <span className="font-medium">Data Normalization</span>
               <ArrowRight className="w-4 h-4" />
-              <span>Process Dataset</span>
+              <span>Normalize Dataset</span>
+              <ArrowRight className="w-4 h-4" />
+              <span className="font-medium text-purple-600">Save to Storage</span>
               <ArrowRight className="w-4 h-4" />
               <span className="font-medium">Return for Feature Analysis</span>
             </div>
@@ -1654,50 +1624,113 @@ List only the top 3-4 most important feature names for prediction. Respond with 
                           </div>
                         </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          <button
-                            onClick={downloadFinalCSV}
-                            className="flex-1 flex items-center justify-center px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                          >
-                            <Download className="w-4 h-4 mr-2" />
-                            Download Final CSV
-                          </button>
-                          
-                          <button
-                            onClick={uploadToCloudAndSave}
-                            disabled={isUploadingToCloud || isSavedToCloud}
-                            className={`flex-1 flex items-center justify-center px-4 py-3 font-medium rounded-lg transition-colors ${
-                              isSavedToCloud 
-                                ? 'bg-green-600 text-white hover:bg-green-700' 
-                                : 'bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed'
-                            }`}
-                          >
-                            {isUploadingToCloud ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Saving to Cloud...
-                              </>
-                            ) : isSavedToCloud ? (
-                              <>
-                                <CheckCircle className="w-4 h-4 mr-2" />
-                                Saved to Cloud
-                              </>
-                            ) : (
-                              <>
-                                <CloudUpload className="w-4 h-4 mr-2" />
-                                Save to Cloud Storage
-                              </>
-                            )}
-                          </button>
+                        {/* Action buttons section - redesigned like normalization page */}
+                        <div className="space-y-4">
+                          {/* Success message for saved dataset */}
+                          {isSavedToCloud && (
+                            <div className="flex items-center p-4 bg-green-50 border border-green-200 rounded-lg">
+                              <CheckCircle className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
+                              <div>
+                                <h5 className="font-medium text-green-800">Dataset Saved to Model Training Storage!</h5>
+                                <p className="text-sm text-green-600">
+                                  Your feature-analyzed dataset is now ready for model training. Redirecting...
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Compact action buttons row */}
+                          <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <div>
+                              <h5 className="font-medium text-green-800">✅ Feature Analysis Complete!</h5>
+                              <p className="text-sm text-green-600">
+                                Your dataset is ready with {selectedFeatures.length} selected features and target encoding.
+                              </p>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                              {/* Download Button */}
+                              <button
+                                onClick={downloadFinalCSV}
+                                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                              >
+                                <Download className="w-4 h-4 mr-2" />
+                                Download CSV
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Model Training Section - Big button like normalization page */}
+                          <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                            <div className="text-center">
+                              <div className="flex justify-center items-center mb-4">
+                                <div className="bg-green-100 p-3 rounded-full mr-4">
+                                  <TrendingUp className="w-8 h-8 text-green-600" />
+                                </div>
+                                <div>
+                                  <h4 className="text-xl font-bold text-green-900 mb-2">🚀 Next Step: Model Training</h4>
+                                  <p className="text-green-700 text-sm max-w-2xl">
+                                    Your dataset is feature-optimized and ready for machine learning model training and validation.
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <button
+                                onClick={uploadToCloudAndSave}
+                                disabled={isUploadingToCloud || isSavedToCloud}
+                                className={`inline-flex items-center px-8 py-4 text-white text-lg font-semibold rounded-xl transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl ${
+                                  isSavedToCloud 
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : isUploadingToCloud
+                                      ? 'bg-green-400 cursor-not-allowed'
+                                      : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'
+                                }`}
+                              >
+                                {isUploadingToCloud ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-3"></div>
+                                    Saving & Redirecting...
+                                  </>
+                                ) : isSavedToCloud ? (
+                                  <>
+                                    <CheckCircle className="w-6 h-6 mr-3" />
+                                    Saved! Redirecting...
+                                    <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                  </>
+                                ) : (
+                                  <>
+                                    <TrendingUp className="w-6 h-6 mr-3" />
+                                    Save for Model Training
+                                    <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                  </>
+                                )}
+                              </button>
+                              
+                              <div className="mt-3 text-xs text-green-600">
+                                {isSavedToCloud ? (
+                                  <>✅ Dataset saved to Model Training • Redirecting...</>
+                                ) : (
+                                  <>💾 Save optimized dataset • Train ML models • Deploy & predict</>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Additional info for saved dataset */}
+                          {isSavedToCloud && (
+                            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                              <p className="text-sm text-blue-700">
+                                <span className="font-medium">💡 Next Steps:</span> Your feature-analyzed dataset is now available in your 
+                                <span className="font-medium"> Model Training</span> section and ready for ML model development.
+                              </p>
+                            </div>
+                          )}
                         </div>
 
-                        {/* Success message after cloud upload */}
-                        {!isUploadingToCloud && (
-                          <div className="text-center text-sm text-gray-600 bg-green-50 border border-green-200 rounded-lg p-3">
-                            💡 After saving to cloud, your processed dataset will be available in your datasets list for model training and further analysis.
-                          </div>
-                        )}
+                        {/* Note about the new workflow */}
                       </div>
                     )}
                   </div>

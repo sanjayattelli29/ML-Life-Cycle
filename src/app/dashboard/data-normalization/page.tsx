@@ -67,16 +67,19 @@ export default function DataNormalization() {
     
     try {
       setIsRefreshing(true);
-      const response = await fetch('/api/transformed-datasets');
+      console.log('Fetching normalization datasets from R2 for user:', session.user.id);
+      const response = await fetch('/api/normalization-datasets');
       
       if (!response.ok) {
         throw new Error('Failed to fetch datasets');
       }
       
       const data = await response.json();
+      console.log('Normalization datasets response:', data);
       setDatasets(data.datasets || []);
       setError('');
     } catch (err) {
+      console.error('Fetch normalization datasets error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch datasets');
       toast.error('Failed to load datasets');
     } finally {
@@ -89,24 +92,10 @@ export default function DataNormalization() {
     fetchDatasets();
   }, [fetchDatasets]);
 
-  const handleDelete = async (datasetId: string) => {
-    if (!confirm('Are you sure you want to delete this dataset?')) return;
-
-    try {
-      const response = await fetch(`/api/transformed-datasets?id=${datasetId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete dataset');
-      }
-
-      setDatasets(datasets.filter(d => d.id !== datasetId));
-      toast.success('Dataset deleted successfully');
-    } catch (err) {
-      toast.error('Failed to delete dataset');
-      console.error('Delete error:', err);
-    }
+  const handleDelete = async (_datasetId: string) => {
+    // Disabled for R2-only storage - can be implemented later if needed
+    toast.error('Delete functionality temporarily disabled for R2-only storage');
+    return;
   };
 
   const handleDownload = async (dataset: TransformedDataset) => {
@@ -547,6 +536,8 @@ function NormalizationStep({ headers, dataset, onNormalizationComplete }) {
   const [showCustomRange, setShowCustomRange] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isSavingToFeatureImportance, setIsSavingToFeatureImportance] = useState(false);
+  const [featureImportanceSaveSuccess, setFeatureImportanceSaveSuccess] = useState(false);
 
   const normalizationMethods = [
     {
@@ -793,6 +784,8 @@ Do NOT default to 0-1 unless it's specifically appropriate for the data type.`;
 
   // New: Save normalized dataset to R2 and MongoDB
   const handleSaveNormalizedDataset = async () => {
+    console.log('💾 NORMALIZATION SAVE BUTTON CLICKED - Starting save to normalization folder');
+    
     if (!normalizedPreview) return;
 
     setIsSaving(true);
@@ -831,8 +824,8 @@ Do NOT default to 0-1 unless it's specifically appropriate for the data type.`;
       
       const csvData = normalizeResult.fullCSV;
       
-      // Save to R2 and update MongoDB using the transformed-datasets upload endpoint
-      const saveResponse = await fetch('/api/transformed-datasets/upload', {
+      // Save to R2 using the normalization datasets upload endpoint (R2-only, no MongoDB)
+      const saveResponse = await fetch('/api/normalization-datasets/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -845,9 +838,7 @@ Do NOT default to 0-1 unless it's specifically appropriate for the data type.`;
             `method: ${method}`,
             `columns: ${selectedColumns.join(', ')}`,
             ...(method === 'minmax' ? [`range: ${minValue}-${maxValue}`] : [])
-          ],
-          replaceExisting: true,
-          oldDatasetId: dataset.id
+          ]
         })
       });
 
@@ -870,6 +861,110 @@ Do NOT default to 0-1 unless it's specifically appropriate for the data type.`;
       toast.error('Failed to save normalized dataset');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // New: Save normalized dataset to Feature Importance folder in R2
+  const handleSaveToFeatureImportance = async () => {
+    console.log('🚀 FEATURE IMPORTANCE SAVE BUTTON CLICKED - Starting save to feature-importance folder');
+    
+    if (!normalizedPreview) return;
+
+    setIsSavingToFeatureImportance(true);
+    setError('');
+    setFeatureImportanceSaveSuccess(false);
+    
+    try {
+      // Get normalized CSV data directly from API (no temporary storage)
+      const requestData = {
+        datasetUrl: dataset.url,
+        columns: selectedColumns,
+        method,
+        min: minValue,
+        max: maxValue,
+        returnFullCSV: true // Request full CSV data directly
+      };
+      
+      console.log('Normalizing for feature-importance save with full CSV:', requestData);
+      
+      const normalizeResponse = await fetch('/api/normalize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestData)
+      });
+      
+      if (!normalizeResponse.ok) {
+        const errorResult = await normalizeResponse.json();
+        throw new Error(errorResult.error || 'Failed to normalize data for saving');
+      }
+      
+      const normalizeResult = await normalizeResponse.json();
+      
+      // Get CSV data directly from response (no downloadUrl needed)
+      if (!normalizeResult.fullCSV) {
+        throw new Error('Full CSV data not received from normalization API');
+      }
+      
+      const csvData = normalizeResult.fullCSV;
+      
+      // Save to R2 using the feature-importance datasets upload endpoint (R2-only, no MongoDB)
+      console.log('📤 Calling feature-importance upload API...');
+      const saveResponse = await fetch('/api/feature-importance-datasets/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          csvData: csvData,
+          originalDatasetName: dataset.originalName || dataset.transformedName,
+          transformedName: `${dataset.transformedName}_normalized_for_feature_importance`,
+          processingSteps: [
+            ...(dataset.processingSteps || []),
+            "data_normalization",
+            `method: ${method}`,
+            `columns: ${selectedColumns.join(', ')}`,
+            ...(method === 'minmax' ? [`range: ${minValue}-${maxValue}`] : []),
+            "prepared_for_feature_importance"
+          ]
+        })
+      });
+
+      if (!saveResponse.ok) {
+        throw new Error(`Failed to save to feature-importance folder: ${saveResponse.status} ${saveResponse.statusText}`);
+      }
+
+      const saveResult = await saveResponse.json();
+      console.log('Feature-importance save successful:', saveResult);
+
+      setFeatureImportanceSaveSuccess(true);
+      toast.success('Normalized dataset saved to Feature Importance folder successfully!');
+      
+      // Auto-redirect to feature-importance page after successful save
+      setTimeout(() => {
+        console.log('🚀 Auto-redirecting to feature-importance page...');
+        window.location.href = '/dashboard/feature-importance';
+      }, 2000); // Wait 2 seconds to show success message before redirecting
+      
+    } catch (err) {
+      console.error('Feature-importance save error:', err);
+      setError(err.message || 'Failed to save to feature importance folder');
+      toast.error('Failed to save to feature importance folder');
+    } finally {
+      setIsSavingToFeatureImportance(false);
+    }
+  };
+
+  // Handle "Analyze Feature Importance" button - save dataset and redirect
+  const handleAnalyzeFeatureImportance = async () => {
+    console.log('🔍 ANALYZE FEATURE IMPORTANCE BUTTON CLICKED');
+    
+    // If there's a normalized preview, save it first, then redirect
+    if (normalizedPreview) {
+      console.log('📊 Normalized data available - saving to feature-importance folder first');
+      await handleSaveToFeatureImportance();
+      // handleSaveToFeatureImportance already handles the redirect after save
+    } else {
+      // No normalized data, just redirect to feature-importance page
+      console.log('🚀 No normalized data - redirecting directly to feature-importance page');
+      window.location.href = '/dashboard/feature-importance';
     }
   };
 
@@ -1427,9 +1522,22 @@ Do NOT default to 0-1 unless it's specifically appropriate for the data type.`;
               <div className="flex items-center p-4 bg-green-50 border border-green-200 rounded-lg">
                 <CheckCircle className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
                 <div>
-                  <h5 className="font-medium text-green-800">Dataset Saved Successfully!</h5>
+                  <h5 className="font-medium text-green-800">Dataset Saved to Normalization Storage!</h5>
                   <p className="text-sm text-green-600">
                     Your normalized dataset has been saved to cloud storage and updated in your dataset library.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Success message for feature importance save */}
+            {featureImportanceSaveSuccess && (
+              <div className="flex items-center p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-purple-600 mr-3 flex-shrink-0" />
+                <div>
+                  <h5 className="font-medium text-purple-800">Dataset Saved to Feature Importance Storage!</h5>
+                  <p className="text-sm text-purple-600">
+                    Your normalized dataset is now available in the Feature Importance analysis section.
                   </p>
                 </div>
               </div>
@@ -1444,11 +1552,11 @@ Do NOT default to 0-1 unless it's specifically appropriate for the data type.`;
                 </p>
               </div>
               <div className="flex items-center space-x-3">
-                {/* Save Button */}
+                {/* Save to Normalization Storage - HIDDEN 
                 <button
                   onClick={handleSaveNormalizedDataset}
                   disabled={isSaving || saveSuccess}
-                  className={`flex items-center px-6 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center px-4 py-2 rounded-lg transition-colors text-sm ${
                     saveSuccess 
                       ? 'bg-gray-400 text-white cursor-not-allowed'
                       : isSaving
@@ -1464,11 +1572,42 @@ Do NOT default to 0-1 unless it's specifically appropriate for the data type.`;
                   ) : saveSuccess ? (
                     <>
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      Saved
+                      Saved to Norm
                     </>
                   ) : (
                     <>
                       <Database className="w-4 h-4 mr-2" />
+                      Save to Normalization
+                    </>
+                  )}
+                </button>
+                */}
+
+                {/* NEW: Save to Feature Importance Storage */}
+                <button
+                  onClick={handleSaveToFeatureImportance}
+                  disabled={isSavingToFeatureImportance || featureImportanceSaveSuccess}
+                  className={`flex items-center px-4 py-2 rounded-lg transition-colors text-sm ${
+                    featureImportanceSaveSuccess 
+                      ? 'bg-gray-400 text-white cursor-not-allowed'
+                      : isSavingToFeatureImportance
+                        ? 'bg-purple-400 text-white cursor-not-allowed'
+                        : 'bg-purple-600 text-white hover:bg-purple-700'
+                  }`}
+                >
+                  {isSavingToFeatureImportance ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                      Saving & Redirecting...
+                    </>
+                  ) : featureImportanceSaveSuccess ? (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Saved! Redirecting...
+                    </>
+                  ) : (
+                    <>
+                      <Star className="w-4 h-4 mr-2" />
                       Save to Storage
                     </>
                   )}
@@ -1501,18 +1640,38 @@ Do NOT default to 0-1 unless it's specifically appropriate for the data type.`;
                 </div>
                 
                 <button
-                  onClick={() => window.location.href = '/dashboard/feature-importance'}
-                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-lg font-semibold rounded-xl hover:from-purple-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  onClick={handleAnalyzeFeatureImportance}
+                  disabled={isSavingToFeatureImportance}
+                  className={`inline-flex items-center px-8 py-4 text-white text-lg font-semibold rounded-xl transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl ${
+                    isSavingToFeatureImportance
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
+                  }`}
                 >
-                  <Star className="w-6 h-6 mr-3" />
-                  Analyze Feature Importance
-                  <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
+                  {isSavingToFeatureImportance ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-3"></div>
+                      Saving & Redirecting...
+                    </>
+                  ) : (
+                    <>
+                      <Star className="w-6 h-6 mr-3" />
+                      Analyze Feature Importance
+                      <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </>
+                  )}
                 </button>
                 
                 <div className="mt-3 text-xs text-purple-600">
-                  Identify key features • Reduce dimensionality • Improve model accuracy
+                  {featureImportanceSaveSuccess ? (
+                    <>✅ Dataset saved to Feature Importance • Redirecting...</>
+                  ) : normalizedPreview ? (
+                    <>💾 Save normalized data & analyze • Identify key features • Improve model accuracy</>
+                  ) : (
+                    <>Identify key features • Reduce dimensionality • Improve model accuracy</>
+                  )}
                 </div>
               </div>
             </div>

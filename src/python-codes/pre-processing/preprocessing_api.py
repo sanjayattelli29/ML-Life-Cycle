@@ -699,6 +699,51 @@ class AdvancedDataPreprocessor:
             }
         }
 
+def clean_csv_data(csv_string):
+    """
+    Clean and validate CSV data before parsing
+    """
+    try:
+        lines = csv_string.strip().split('\n')
+        if not lines:
+            return csv_string
+        
+        # Get header to determine expected field count
+        header_line = lines[0]
+        expected_fields = len(header_line.split(','))
+        
+        cleaned_lines = [header_line]
+        
+        for i, line in enumerate(lines[1:], 1):
+            # Skip empty lines
+            if not line.strip():
+                continue
+                
+            # Count fields in current line
+            fields = line.split(',')
+            
+            # If field count doesn't match, try to fix common issues
+            if len(fields) != expected_fields:
+                # Remove extra commas at the end
+                line = line.rstrip(',')
+                fields = line.split(',')
+                
+                # If still doesn't match, pad with empty fields or truncate
+                if len(fields) < expected_fields:
+                    fields.extend([''] * (expected_fields - len(fields)))
+                elif len(fields) > expected_fields:
+                    fields = fields[:expected_fields]
+                
+                line = ','.join(fields)
+            
+            cleaned_lines.append(line)
+        
+        return '\n'.join(cleaned_lines)
+    
+    except Exception as e:
+        logger.warning(f"CSV cleaning failed: {str(e)}, returning original data")
+        return csv_string
+
 @app.route("/preprocess", methods=["POST"])
 @limiter.limit("20 per minute")
 def preprocess_data():
@@ -720,13 +765,58 @@ def preprocess_data():
                 "error": "Missing csvData field"
             }), 400
 
-        # Parse CSV data
-        df = pd.read_csv(StringIO(payload['csvData']))
+        # Clean and parse CSV data with robust error handling
+        csv_data = payload['csvData']
+        
+        try:
+            # First attempt: standard parsing
+            df = pd.read_csv(StringIO(csv_data))
+        except pd.errors.ParserError as e:
+            logger.warning(f"Initial CSV parsing failed: {str(e)}. Attempting to clean data...")
+            
+            # Clean the CSV data
+            cleaned_csv = clean_csv_data(csv_data)
+            
+            try:
+                # Second attempt: parse cleaned data
+                df = pd.read_csv(StringIO(cleaned_csv))
+                logger.info("Successfully parsed CSV after cleaning")
+            except Exception as e2:
+                # Third attempt: handle inconsistent field counts with pandas options
+                try:
+                    df = pd.read_csv(
+                        StringIO(csv_data),
+                        on_bad_lines='skip',
+                        sep=',',
+                        quotechar='"',
+                        skipinitialspace=True
+                    )
+                    logger.warning(f"Used skip bad lines parsing: {str(e)}. Some malformed rows were skipped.")
+                except Exception as e3:
+                    # Fourth attempt: use most flexible parsing
+                    try:
+                        df = pd.read_csv(
+                            StringIO(csv_data),
+                            sep=None,
+                            engine='python',
+                            on_bad_lines='skip'
+                        )
+                        logger.warning(f"Used most flexible CSV parsing: {str(e)}")
+                    except Exception as e4:
+                        return jsonify({
+                            "success": False,
+                            "error": f"CSV parsing failed after multiple attempts. Original error: {str(e)}. Please check your CSV format and ensure consistent field counts. Common issues: extra commas, unescaped quotes, inconsistent row lengths."
+                        }), 400
+        except Exception as e:
+            return jsonify({
+                "success": False,
+                "error": f"CSV parsing error: {str(e)}"
+            }), 400
         
         if df.empty:
             return jsonify({
                 "success": False,
-                "error": "Empty dataset provided"
+                "error": "Empty dataset provided or all rows were malformed"
             }), 400
 
         # Get preprocessing configuration
@@ -746,8 +836,31 @@ def preprocess_data():
         # Get preprocessing report
         report = preprocessor.get_preprocessing_report()
         
+        # Validate processed DataFrame
+        if processed_df is None or processed_df.empty:
+            logger.warning("Processed DataFrame is empty, returning original data")
+            processed_df = df
+            report = {
+                'preprocessing_log': ['Warning: Preprocessing resulted in empty dataset, returned original data'],
+                'preprocessing_stats': {},
+                'final_dataset_info': {
+                    'shape': df.shape,
+                    'columns': list(df.columns),
+                    'numeric_columns': [],
+                    'categorical_columns': [],
+                    'datetime_columns': [],
+                    'missing_values': int(df.isnull().sum().sum()),
+                    'data_types': {k: str(v) for k, v in df.dtypes.to_dict().items()}
+                }
+            }
+        
         # Convert processed DataFrame to CSV string
-        processed_csv = processed_df.to_csv(index=False)
+        try:
+            processed_csv = processed_df.to_csv(index=False)
+        except Exception as e:
+            logger.error(f"Error converting processed DataFrame to CSV: {str(e)}")
+            processed_csv = df.to_csv(index=False)
+            report['preprocessing_log'].append(f"Warning: Failed to convert processed data to CSV, returned original: {str(e)}")
         
         return jsonify({
             "success": True,
@@ -756,14 +869,14 @@ def preprocess_data():
             "original_shape": df.shape,
             "processed_shape": processed_df.shape,
             "improvements": {
-                "missing_values_handled": report['preprocessing_stats'].get('missing_values', {}).get('before', 0),
-                "duplicates_removed": report['preprocessing_stats'].get('duplicates', {}).get('removed', 0),
-                "outliers_handled": report['preprocessing_stats'].get('outliers', {}).get('outliers_detected', 0),
-                "features_optimized": len(report['preprocessing_stats'].get('feature_correlation', {}).get('removed_features', [])),
+                "missing_values_handled": report.get('preprocessing_stats', {}).get('missing_values', {}).get('before', 0),
+                "duplicates_removed": report.get('preprocessing_stats', {}).get('duplicates', {}).get('removed', 0),
+                "outliers_handled": report.get('preprocessing_stats', {}).get('outliers', {}).get('outliers_detected', 0),
+                "features_optimized": len(report.get('preprocessing_stats', {}).get('feature_correlation', {}).get('removed_features', [])),
                 "data_quality_score": min(100, max(0, 100 - (
-                    report['preprocessing_stats'].get('missing_values', {}).get('before', 0) * 0.1 +
-                    report['preprocessing_stats'].get('duplicates', {}).get('removed', 0) * 0.05 +
-                    report['preprocessing_stats'].get('outliers', {}).get('outliers_detected', 0) * 0.02
+                    report.get('preprocessing_stats', {}).get('missing_values', {}).get('before', 0) * 0.1 +
+                    report.get('preprocessing_stats', {}).get('duplicates', {}).get('removed', 0) * 0.05 +
+                    report.get('preprocessing_stats', {}).get('outliers', {}).get('outliers_detected', 0) * 0.02
                 )))
             }
         })
@@ -773,6 +886,93 @@ def preprocess_data():
         return jsonify({
             "success": False,
             "error": f"Preprocessing error: {str(e)}"
+        }), 500
+
+@app.route("/preprocess/validate", methods=["POST"])
+@limiter.limit("30 per minute")
+def validate_csv():
+    """
+    Validate CSV format before preprocessing
+    """
+    try:
+        if not request.is_json:
+            return jsonify({
+                "success": False,
+                "error": "Request must be JSON"
+            }), 400
+
+        payload = request.get_json()
+        
+        if 'csvData' not in payload:
+            return jsonify({
+                "success": False,
+                "error": "Missing csvData field"
+            }), 400
+
+        csv_data = payload['csvData']
+        
+        # Attempt to parse CSV and get basic info
+        try:
+            df = pd.read_csv(StringIO(csv_data))
+            
+            validation_info = {
+                "valid": True,
+                "shape": df.shape,
+                "columns": list(df.columns),
+                "column_types": {k: str(v) for k, v in df.dtypes.to_dict().items()},
+                "missing_values": int(df.isnull().sum().sum()),
+                "duplicate_rows": int(df.duplicated().sum()),
+                "sample_data": df.head(3).to_dict('records') if len(df) > 0 else []
+            }
+            
+            return jsonify({
+                "success": True,
+                "validation": validation_info,
+                "message": "CSV format is valid and ready for preprocessing"
+            })
+            
+        except Exception as e:
+            # Try with cleaning
+            cleaned_csv = clean_csv_data(csv_data)
+            try:
+                df = pd.read_csv(StringIO(cleaned_csv))
+                
+                validation_info = {
+                    "valid": True,
+                    "shape": df.shape,
+                    "columns": list(df.columns),
+                    "column_types": {k: str(v) for k, v in df.dtypes.to_dict().items()},
+                    "missing_values": int(df.isnull().sum().sum()),
+                    "duplicate_rows": int(df.duplicated().sum()),
+                    "sample_data": df.head(3).to_dict('records') if len(df) > 0 else [],
+                    "warnings": ["CSV required cleaning due to format issues"]
+                }
+                
+                return jsonify({
+                    "success": True,
+                    "validation": validation_info,
+                    "message": "CSV format was corrected and is now valid for preprocessing"
+                })
+                
+            except Exception as e2:
+                return jsonify({
+                    "success": False,
+                    "validation": {
+                        "valid": False,
+                        "error": str(e),
+                        "suggestions": [
+                            "Ensure all rows have the same number of columns",
+                            "Check for unescaped quotes in text fields",
+                            "Remove extra commas at the end of rows",
+                            "Verify the CSV uses standard comma-separated format"
+                        ]
+                    }
+                })
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": f"Validation error: {str(e)}"
         }), 500
 
 @app.route("/preprocess/config", methods=["GET"])
@@ -815,6 +1015,7 @@ def home():
         "description": "Comprehensive data preprocessing using 12 key quality factors",
         "endpoints": {
             "/preprocess": "POST - Main preprocessing endpoint",
+            "/preprocess/validate": "POST - Validate CSV format before processing",
             "/preprocess/config": "GET - Get default configuration",
         },
         "preprocessing_factors": [

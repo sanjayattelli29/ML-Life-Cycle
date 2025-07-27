@@ -3,13 +3,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "react-hot-toast";
+import Papa from "papaparse";
 import {
   rowsPerPage,
   Dataset,
   Message,
-  assessDataQuality,
-  recommendVisualizations,
-  handleAIAnalysis
+  getColumnTypes,
+  callGroqAPI
 } from "./page2";
 
 // Component state and functions
@@ -24,23 +24,143 @@ export default function AIAnalysis() {
   const [selectedOperation, setSelectedOperation] = useState<string | null>(null);
   const [showColumnSelection, setShowColumnSelection] = useState(false);
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
+  const [featureImportanceData, setFeatureImportanceData] = useState<Record<string, unknown> | null>(null);
+  const [isLoadingFeatureImportance, setIsLoadingFeatureImportance] = useState(false);
+  const [isLoadingDatasets, setIsLoadingDatasets] = useState(true);
+  const [availableModels, setAvailableModels] = useState<Array<{
+    model_id: string;
+    dataset_name: string;
+    model_name: string;
+    created_at?: string;
+    saved_at?: string;
+    has_metadata: boolean;
+    size: number;
+  }>>([]);
+  const [selectedModelId, setSelectedModelId] = useState<string>('');
+  const [showModelSelection, setShowModelSelection] = useState(false);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchDatasets = async () => {
       if (session?.user?.id) {
+        setIsLoadingDatasets(true);
         try {
-          const response = await fetch('/api/datasets');
+          console.log('Fetching datasets from R2 for AI analysis...');
+          const response = await fetch('/api/model-training-datasets');
           if (!response.ok) {
             const errorText = await response.text();
             toast.error(`Failed to fetch datasets: ${errorText}`);
             return;
           }
           const data = await response.json();
-          setDatasets(data);
+          console.log('R2 datasets loaded:', data.datasets?.length || 0);
+          
+          if (!data.datasets || data.datasets.length === 0) {
+            console.log('No datasets found in R2 storage');
+            setDatasets([]);
+            setIsLoadingDatasets(false);
+            return;
+          }
+          
+          // Convert R2 dataset format to expected Dataset interface
+          const convertedDatasets = await Promise.all((data.datasets || []).map(async (r2Dataset: {
+            transformedName: string;
+            url: string;
+            id: string;
+          }) => {
+            try {
+              // Fetch CSV data to get columns and data
+              const proxyUrl = `/api/proxy-csv?url=${encodeURIComponent(r2Dataset.url)}`;
+              const csvResponse = await fetch(proxyUrl);
+              
+              if (!csvResponse.ok) {
+                console.warn('Failed to load CSV for dataset:', r2Dataset.transformedName);
+                return null;
+              }
+              
+              const csvText = await csvResponse.text();
+              
+              // Parse CSV using Papa Parse
+              const parseResult = await new Promise<Papa.ParseResult<Record<string, string>>>((resolve) => {
+                Papa.parse(csvText, {
+                  header: true,
+                  skipEmptyLines: true,
+                  complete: resolve,
+                  error: (error) => {
+                    console.error('CSV parsing error:', error);
+                    resolve({ 
+                      data: [], 
+                      errors: [error], 
+                      meta: { 
+                        fields: [],
+                        delimiter: ',',
+                        linebreak: '\n',
+                        aborted: false,
+                        truncated: false,
+                        cursor: 0
+                      } 
+                    });
+                  }
+                });
+              });
+              
+              if (parseResult.errors.length > 0 || !parseResult.data || parseResult.data.length === 0) {
+                console.warn('Failed to parse CSV for dataset:', r2Dataset.transformedName);
+                return null;
+              }
+              
+              const headers = parseResult.meta.fields || [];
+              const dataRows = parseResult.data.map((row: Record<string, string>) => {
+                const processedRow: Record<string, string | number> = {};
+                headers.forEach(header => {
+                  const value = row[header] || '';
+                  // Try to convert to number if possible
+                  const numValue = Number(value);
+                  processedRow[header] = !isNaN(numValue) && value !== '' ? numValue : value;
+                });
+                return processedRow;
+              });
+              
+              // Determine column types
+              const columns = headers.map(header => {
+                const sampleValues = dataRows.slice(0, 10).map(row => row[header]);
+                const numericCount = sampleValues.filter(val => typeof val === 'number' && !isNaN(val as number)).length;
+                const isNumeric = numericCount > sampleValues.length * 0.7; // 70% numeric threshold
+                
+                return {
+                  name: header,
+                  type: isNumeric ? 'numeric' as const : 'text' as const
+                };
+              });
+              
+              return {
+                _id: r2Dataset.id,
+                name: r2Dataset.transformedName,
+                columns,
+                data: dataRows.slice(0, 1000) // Limit to first 1000 rows for performance
+              };
+            } catch (error) {
+              console.error('Error processing dataset:', r2Dataset.transformedName, error);
+              return null;
+            }
+          }));
+          
+          // Filter out null datasets and set the state
+          const validDatasets = convertedDatasets.filter(Boolean) as Dataset[];
+          console.log('Converted datasets:', validDatasets.length);
+          setDatasets(validDatasets);
+          
+          if (validDatasets.length === 0) {
+            console.log('No compatible datasets found');
+          }
+          
         } catch (err) {
           const error = err as Error;
+          console.error('Error fetching R2 datasets:', error);
           toast.error(`Error loading datasets: ${error.message}`);
+        } finally {
+          setIsLoadingDatasets(false);
         }
       }
     };
@@ -57,115 +177,266 @@ export default function AIAnalysis() {
     if (selected) {
       setCurrentDataset(selected);
       setCurrentPage(0);
+      setFeatureImportanceData(null); // Reset feature importance data
 
-      // Show loading message for metrics
       setMessages([{
         sender: 'bot',
-        text: `Dataset "${selected.name}" selected! Fetching metrics from MongoDB... This may take a moment.`
+        text: `Dataset "${selected.name}" selected! 
+
+📊 Dataset Information:
+• Rows: ${selected.data.length}
+• Columns: ${selected.columns.length}
+• Available columns: ${selected.columns.map(c => c.name).join(', ')}
+
+🤖 Ready for AI Analysis:
+• Use Analytics Operations below for quick column analysis
+• Click "Fetch Metrics for AI Insights" to load advanced AI capabilities
+• Ask questions with @ai or directly chat about your data
+
+Try asking:
+• "What patterns do you see in this data?"
+• "Show me correlations between columns"
+• "What insights can you provide?"
+• "@ai analyze trends and patterns"`
       }]);
-
-      try {
-        // Auto-fetch metrics from MongoDB
-        console.log('Auto-fetching metrics for dataset:', {
-          userId: session?.user?.id,
-          datasetId: selected._id,
-          datasetName: selected.name
-        });
-
-        const response = await fetch(
-          `/api/metrics/get?userId=${encodeURIComponent(session?.user?.id || '')}&datasetId=${encodeURIComponent(selected._id)}`
-        );
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: Failed to fetch metrics`);
-        }
-
-        const data = await response.json();
-        
-        console.log('Metrics fetch response:', {
-          success: data.success,
-          hasMetrics: !!data.metrics,
-          metricsKeys: data.metrics ? Object.keys(data.metrics) : []
-        });
-        
-        if (data.success && data.metrics) {
-          // Store metrics in the dataset object for AI analysis
-          selected.mongoMetrics = data.metrics;
-          
-          console.log('Successfully loaded MongoDB metrics:', {
-            datasetName: selected.name,
-            metricsCount: Object.keys(data.metrics).length,
-            sampleMetrics: Object.keys(data.metrics).slice(0, 3)
-          });
-          
-          // Calculate initial data quality assessment
-          const quality = assessDataQuality(selected);
-          const visualRecommendations = recommendVisualizations(selected);
-
-          setMessages([{
-            sender: 'bot',
-            text: `Dataset "${selected.name}" loaded with MongoDB metrics! Here's a comprehensive overview:
-
-📊 Data Quality Assessment:
-• Completeness: ${quality.completeness.toFixed(1)}%
-• Consistency: ${quality.consistency.toFixed(1)}%
-• Accuracy: ${quality.accuracy.toFixed(1)}%
-${quality.suggestions.map(s => `• ${s.description} - ${s.recommendation}`).join('\n')}
-
-📈 MongoDB Metrics Available:
-• ${Object.keys(data.metrics).length} quality metrics loaded
-• Real-time analysis capabilities enabled
-
-🎯 Top Visualization Recommendations:
-${visualRecommendations.slice(0, 3).map(r => `• ${r.chartType}: ${r.description}`).join('\n')}
-
-✨ I can help you analyze this data with enhanced insights. Try:
-• "@ai analyze trends with metrics"
-• "@ai find correlations using quality data"
-• "@ai what insights can you share from the metrics?"
-• Or ask about specific columns and statistics!`
-          }]);
-          toast.success(`Metrics loaded for: ${selected.name}`);
-        } else {
-          throw new Error('No metrics found for this dataset. Please generate metrics first.');
-        }
-      } catch (error) {
-        console.error('Error fetching metrics:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch dataset metrics';
-        
-        // Fallback to basic analysis without metrics
-        const quality = assessDataQuality(selected);
-        const visualRecommendations = recommendVisualizations(selected);
-
-        setMessages([{
-          sender: 'bot',
-          text: `Dataset "${selected.name}" selected, but couldn't load MongoDB metrics.
-
-⚠️ Metrics Status: ${errorMessage}
-
-📊 Basic Data Quality Assessment:
-• Completeness: ${quality.completeness.toFixed(1)}%
-• Consistency: ${quality.consistency.toFixed(1)}%
-• Accuracy: ${quality.accuracy.toFixed(1)}%
-
-🎯 Visualization Recommendations:
-${visualRecommendations.slice(0, 3).map(r => `• ${r.chartType}: ${r.description}`).join('\n')}
-
-💡 Note: Generate metrics for this dataset first to unlock enhanced AI analysis capabilities.
-
-I can still help with basic analysis:
-• "@ai analyze trends"
-• "@ai find correlations"
-• Or ask about specific columns!`
-        }]);
-        toast.error(`Basic analysis mode for: ${selected.name}`);
-      }
+      
+      toast.success(`Dataset selected: ${selected.name}`);
     } else {
       setCurrentDataset(null);
       setMessages([]);
       setCurrentPage(0);
+      setFeatureImportanceData(null);
     }
   };
+
+  // Function to fetch available models from R2 and show dropdown
+  const fetchAvailableModels = async () => {
+    if (!currentDataset) {
+      toast.error('No dataset selected');
+      return;
+    }
+
+    setIsLoadingModels(true);
+    try {
+      console.log('🔍 Fetching AI analysis files from R2 cloud storage...');
+      const datasetName = currentDataset.name;
+      
+      // Use clean dataset ID for consistent folder structure
+      const cleanDatasetId = datasetName.split('_')[0] || datasetName;
+      console.log('🗂️ Using clean dataset ID for search:', cleanDatasetId);
+      
+      const modelsResponse = await fetch(`/api/ai-analysis/list-files?datasetId=${encodeURIComponent(cleanDatasetId)}&datasetName=${encodeURIComponent(datasetName)}`);
+      
+      if (!modelsResponse.ok) {
+        const errorData = await modelsResponse.json();
+        console.error('❌ AI analysis files API error:', errorData);
+        throw new Error(errorData.error || `Failed to fetch AI analysis files (HTTP ${modelsResponse.status})`);
+      }
+      
+      const modelsData = await modelsResponse.json();
+      console.log('📊 AI analysis files response:', modelsData);
+      
+      if (!modelsData.files || modelsData.files.length === 0) {
+        throw new Error(`No AI analysis files found for dataset "${datasetName}". Please go to Model Training page and click "Save for AI Analysis" button after training a model.`);
+      }
+      
+      // All files should have metadata since they're specifically saved for AI analysis
+      const filesWithMetadata = modelsData.files.map((file: {
+        model_id: string;
+        dataset_id: string;
+        dataset_name: string;
+        model_name: string;
+        saved_at: string;
+        file_path: string;
+        size: number;
+        is_fallback?: boolean;
+      }) => ({
+        ...file,
+        has_metadata: true,
+        size: file.size || 0
+      }));
+
+      setAvailableModels(filesWithMetadata);
+      setShowModelSelection(true);
+      setSelectedModelId(''); // Reset selection
+      
+      // Add message to chat about available models
+      const userMessage: Message = { sender: 'user', text: 'Browse AI Analysis Files from R2 Cloud' };
+      setMessages(prev => [...prev, userMessage]);
+      
+      const fallbackInfo = modelsData.fallback_mode ? '\n\n⚠️ Note: Using fallback mode - backend service not available. These are sample files for demonstration.' : '';
+      
+      const botMessage: Message = { 
+        sender: 'bot', 
+        text: `🔍 Found ${filesWithMetadata.length} AI analysis files in R2 cloud storage!${fallbackInfo}
+
+📊 Available AI Analysis Files:
+${filesWithMetadata.map((file: { model_id: string; model_name: string; saved_at: string; is_fallback?: boolean }) => 
+  `• ${file.model_name || file.model_id} (${new Date(file.saved_at || '').toLocaleDateString()})${file.is_fallback ? ' [Sample]' : ''}`
+).join('\n')}
+
+These files contain model metadata specifically saved for AI analysis. Select one to enhance your data insights!`,
+        isAIEnhanced: true
+      };
+      setMessages(prev => [...prev, botMessage]);
+      
+      const successMessage = modelsData.fallback_mode 
+        ? `Found ${filesWithMetadata.length} AI analysis files (demo mode - use "Save for AI Analysis" on Model Training page)`
+        : `Found ${filesWithMetadata.length} AI analysis files ready for download!`;
+      
+      toast.success(successMessage);
+      
+    } catch (error) {
+      console.error('Error fetching AI analysis files:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch AI analysis files';
+      
+      const userMessage: Message = { sender: 'user', text: 'Browse AI Analysis Files from R2 Cloud' };
+      setMessages(prev => [...prev, userMessage]);
+      
+      const botMessage: Message = { 
+        sender: 'bot', 
+        text: `❌ Unable to fetch AI analysis files from R2 cloud storage.
+
+${errorMessage}
+
+🔧 How to Create AI Analysis Files:
+1. Go to the Model Training page
+2. Train a model with your dataset
+3. After training completes, click the "Save for AI Analysis" button in the Model Files & Code section
+4. Return here and try again
+
+AI analysis files are lightweight JSON metadata files that enhance the chat experience with trained model insights.`
+      };
+      setMessages(prev => [...prev, botMessage]);
+      
+      toast.error('Failed to fetch AI analysis files from R2 storage');
+    } finally {
+      setIsLoadingModels(false);
+    }
+  };
+
+  // Function to download selected model's metadata
+  const downloadSelectedModelMetadata = async () => {
+    if (!selectedModelId || !currentDataset) {
+      toast.error('Please select a model first');
+      return;
+    }
+
+    setIsLoadingFeatureImportance(true);
+    try {
+      console.log('📥 Downloading AI analysis file for selected model:', selectedModelId);
+      
+      // Use clean dataset ID for consistent folder structure  
+      const datasetName = currentDataset.name;
+      const cleanDatasetId = datasetName.split('_')[0] || datasetName;
+      console.log('🗂️ Using clean dataset ID for download:', cleanDatasetId);
+      
+      const downloadResponse = await fetch(`/api/ai-analysis/download-file?modelId=${selectedModelId}&datasetId=${encodeURIComponent(cleanDatasetId)}`);
+      
+      if (!downloadResponse.ok) {
+        const errorData = await downloadResponse.json();
+        console.error('❌ Download error:', errorData);
+        throw new Error(errorData.error || `Failed to download AI analysis file from R2 (HTTP ${downloadResponse.status})`);
+      }
+      
+      const downloadResult = await downloadResponse.json();
+      console.log('✅ Successfully downloaded AI analysis file:', downloadResult);
+      
+      // Store the metadata temporarily for AI analysis
+      setFeatureImportanceData(downloadResult.metadata);
+      
+      // Hide model selection and reset
+      setShowModelSelection(false);
+      setSelectedModelId('');
+      
+      // Find the selected model details for display
+      const selectedModel = availableModels.find(m => m.model_id === selectedModelId);
+      
+      // Add success message to chat
+      const userMessage: Message = { sender: 'user', text: `Download AI Analysis File: ${selectedModel?.model_name || selectedModelId}` };
+      setMessages(prev => [...prev, userMessage]);
+      
+      const downloadMethod = downloadResult.fallback_mode ? 'Sample Data (Demo)' : 'R2 Cloud Storage';
+      const downloadSource = downloadResult.downloaded_from === 'fallback_ai_analysis' ? 'Sample AI Analysis Data' : 'R2 AI Analysis Storage';
+      
+      const botMessage: Message = { 
+        sender: 'bot', 
+        text: `🎯 AI analysis file downloaded successfully!
+
+📊 Model Information:
+• Model ID: ${selectedModelId}
+• Model Type: ${downloadResult.metadata?.model_name || 'Unknown'}
+• Task Type: ${downloadResult.metadata?.task_type || 'Unknown'}
+• Features: ${downloadResult.metadata?.features?.length || 0}
+• Target: ${downloadResult.metadata?.target || 'Unknown'}
+• Performance: ${downloadResult.metadata?.metrics?.performance_summary?.overall_performance || 'Unknown'}
+
+☁️ Download Details:
+• Source: ${downloadSource}
+• Method: ${downloadMethod}
+• Path: ${downloadResult.download_path || 'Unknown'}
+• Status: Ready for AI chat analysis
+
+🧠 Enhanced AI Insights Now Available:
+• Advanced feature importance analysis from trained model
+• Model performance metrics and insights
+• Enhanced data understanding with ML context
+• Real-time access to training metadata
+
+${downloadResult.fallback_mode ? '📝 Note: This is sample data for demonstration. Use "Save for AI Analysis" on Model Training page to create real files.' : ''}
+
+Ask me anything about your data and I'll use these trained model insights!
+
+Try asking:
+• "@ai which features are most important?"
+• "@ai explain the model performance" 
+• "@ai what patterns does the model reveal?"
+• "@ai how do features correlate with the target?"`,
+        isAIEnhanced: true
+      };
+      setMessages(prev => [...prev, botMessage]);
+      
+      const successMessage = downloadResult.fallback_mode 
+        ? 'Sample AI analysis data loaded for demonstration!'
+        : 'AI analysis file downloaded and ready for enhanced insights!';
+      
+      toast.success(successMessage);
+      
+    } catch (error) {
+      console.error('Error downloading AI analysis file:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to download AI analysis file';
+      
+      const userMessage: Message = { sender: 'user', text: `Download AI Analysis File: ${selectedModelId}` };
+      setMessages(prev => [...prev, userMessage]);
+      
+      const botMessage: Message = { 
+        sender: 'bot', 
+        text: `❌ Unable to download AI analysis file for selected model.
+
+${errorMessage}
+
+🔧 How to Fix This:
+1. Go to Model Training page and train a model with this dataset
+2. Click the "Save for AI Analysis" button after training completes
+3. Return here and try again
+4. Ensure you're using the same dataset name
+
+AI analysis files are created when you explicitly save them from the Model Training page.`
+      };
+      setMessages(prev => [...prev, botMessage]);
+      
+      toast.error('Failed to download AI analysis file');
+    } finally {
+      setIsLoadingFeatureImportance(false);
+    }
+  };
+
+  // Fetch feature importance JSON via backend API (no direct R2 calls)
+  const fetchFeatureImportanceForAI = async () => {
+    // Step 1: Show available models first
+    await fetchAvailableModels();
+  };
+
   const handleAnalyticsOperation = async (columnName: string) => {
     if (!selectedOperation || !currentDataset) return;
   
@@ -242,7 +513,7 @@ I can still help with basic analysis:
       // Check if it's an AI query
       if (textToSend.trim().startsWith('@ai ')) {
         const aiPrompt = textToSend.trim().slice(4);
-        const aiResponse = await handleAIAnalysis(aiPrompt, currentDataset);
+        const aiResponse = await handleAIAnalysisWithFeatures(aiPrompt, currentDataset, featureImportanceData);
         setMessages(prev => [...prev, { 
           sender: 'bot', 
           text: aiResponse || 'Sorry, I could not process your request.',
@@ -253,7 +524,7 @@ I can still help with basic analysis:
       }
       
       const aiPrompt = textToSend.startsWith('@ai ') ? textToSend.slice(4) : textToSend;
-      const aiResponse = await handleAIAnalysis(aiPrompt, currentDataset);
+      const aiResponse = await handleAIAnalysisWithFeatures(aiPrompt, currentDataset, featureImportanceData);
       
       setMessages(prev => [...prev, { 
         sender: 'bot', 
@@ -272,6 +543,80 @@ I can still help with basic analysis:
       setSelectedOperation(null);
       setShowColumnSelection(false);
     }
+  };
+
+  // Enhanced AI analysis function that uses feature importance data
+  const handleAIAnalysisWithFeatures = async (query: string, dataset: Dataset, featureData: Record<string, unknown> | null) => {
+    const columnTypes = getColumnTypes(dataset.data);
+    
+    // Build context with available data
+    let enhancedContext = `Dataset: ${dataset.name} (${dataset.data.length} rows, ${dataset.columns.length} cols)
+Columns: ${dataset.columns.map(c => `${c.name}(${c.type})`).join(', ')}
+
+Basic Data Statistics:
+${columnTypes.numeric.slice(0, 3).map(col => {
+  const values = dataset.data.map(row => Number(row[col])).filter(n => !isNaN(n));
+  const avg = values.reduce((a, b) => a + b, 0) / values.length;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  return `${col}: avg=${avg.toFixed(2)}, range=[${min}-${max}]`;
+}).join('\n')}`;
+
+    // Add feature importance insights if available
+    if (featureData) {
+      const metadata = featureData as {
+        model_name?: string;
+        task_type?: string;
+        features?: string[];
+        target?: string;
+        metrics?: {
+          feature_importance?: Record<string, number>;
+          r2_score?: number;
+          accuracy?: number;
+          performance_summary?: { overall_performance?: string };
+        };
+      };
+
+      if (metadata.metrics?.feature_importance) {
+        const topFeatures = Object.entries(metadata.metrics.feature_importance)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 5)
+          .map(([feature, importance]) => `${feature}: ${(importance * 100).toFixed(1)}%`)
+          .join('\n');
+
+        enhancedContext += `
+
+🎯 AI Model Insights Available:
+Model: ${metadata.model_name || 'Unknown'} (${metadata.task_type || 'Unknown'})
+Target Variable: ${metadata.target || 'Unknown'}
+Model Performance: ${metadata.metrics?.performance_summary?.overall_performance || 'Unknown'}
+
+Top Feature Importance:
+${topFeatures}
+
+Performance Metrics:
+${metadata.metrics.accuracy ? `Accuracy: ${(metadata.metrics.accuracy * 100).toFixed(1)}%` : ''}
+${metadata.metrics.r2_score ? `R² Score: ${metadata.metrics.r2_score.toFixed(3)}` : ''}`;
+      }
+    } else {
+      enhancedContext += `
+
+💡 Note: No trained model data available. For enhanced AI insights, click "Fetch Metrics for AI Insights" after training a model.`;
+    }
+
+    const prompt = `${enhancedContext}
+
+User Query: ${query}
+
+Provide detailed analysis with specific insights, actionable recommendations, and data-driven observations:`;
+
+    const aiResponse = await callGroqAPI(prompt);
+    let result = aiResponse || 'AI analysis unavailable. Please try asking a more specific question about your data.';
+    
+    // Clean up the output
+    result = result.replace(/\*/g, '');
+    
+    return result;
   };
 
   const getPaginatedData = () => {
@@ -307,21 +652,51 @@ I can still help with basic analysis:
       {/* Dataset Selection */}
       <div className="bg-white shadow-md rounded-lg p-6 mb-6 border border-gray-200">
         <label htmlFor="dataset-select" className="block text-sm font-semibold text-gray-900 mb-2">
-          Select Dataset
+          Select Dataset from R2 Storage
         </label>
-        <select
-          id="dataset-select"
-          className="w-full border border-gray-300 p-3 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          value={currentDataset?._id || ''}
-          onChange={handleDatasetChange}
-        >
-          <option value="">-- Choose your dataset --</option>
-          {datasets.map((dataset) => (
-            <option key={dataset._id} value={dataset._id}>
-              {dataset.name} ({dataset._id.slice(0, 6)})
-            </option>
-          ))}
-        </select>
+        
+        {isLoadingDatasets ? (
+          <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-gray-600">Loading datasets from R2 storage...</span>
+            </div>
+          </div>
+        ) : (
+          <>
+            <select
+              id="dataset-select"
+              className="w-full border border-gray-300 p-3 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={currentDataset?._id || ''}
+              onChange={handleDatasetChange}
+              disabled={datasets.length === 0}
+            >
+              <option value="">
+                {datasets.length === 0 
+                  ? "-- No datasets available. Please prepare datasets in Model Training first --" 
+                  : "-- Choose your dataset --"
+                }
+              </option>
+              {datasets.map((dataset) => (
+                <option key={dataset._id} value={dataset._id}>
+                  {dataset.name} ({dataset.data.length} rows, {dataset.columns.length} columns)
+                </option>
+              ))}
+            </select>
+            
+            {datasets.length === 0 && (
+              <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <span className="text-yellow-600">⚠️</span>
+                  <div className="text-sm text-yellow-700">
+                    <p className="font-medium">No datasets found in R2 storage</p>
+                    <p className="mt-1">Please go to the Model Training page and upload/prepare datasets first.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {currentDataset && (
@@ -445,7 +820,111 @@ I can still help with basic analysis:
                     ))}
                   </div>
                 </div>
-              )}              <form onSubmit={handleSend} className="flex gap-3">
+              )}
+
+              {/* Fetch Feature Importance Button */}
+              <div className="mb-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h6 className="text-sm font-semibold text-purple-700 mb-1">🧠 AI Insights Enhancement</h6>
+                    <p className="text-xs text-purple-600">Browse and download trained model metadata for advanced AI analysis</p>
+                  </div>
+                  <button
+                    onClick={fetchFeatureImportanceForAI}
+                    disabled={isLoadingModels || isLoadingFeatureImportance}
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 disabled:bg-purple-400 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isLoadingModels ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Loading Models...
+                      </>
+                    ) : (
+                      <>
+                        <span>�</span>
+                        Browse Available Models
+                      </>
+                    )}
+                  </button>
+                </div>
+                {featureImportanceData && (
+                  <div className="mt-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                    ✅ Model metadata downloaded! Enhanced AI analysis available.
+                  </div>
+                )}
+              </div>
+
+              {/* Model Selection Dropdown */}
+              {showModelSelection && (
+                <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h6 className="text-sm font-semibold text-blue-700 mb-1">☁️ Select AI Analysis File from R2 Cloud Storage</h6>
+                        <p className="text-xs text-blue-600">Choose which model&apos;s AI analysis file to download for enhanced insights</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowModelSelection(false);
+                          setSelectedModelId('');
+                        }}
+                        className="text-sm text-blue-600 hover:text-blue-800"
+                      >
+                        Cancel 
+                      </button>
+                    </div>
+                    
+                    <div className="flex gap-3 items-end">
+                      <div className="flex-1">
+                        <label htmlFor="model-select" className="block text-xs font-medium text-blue-700 mb-1">
+                          Available AI Analysis Files ({availableModels.length} found)
+                        </label>
+                        <select
+                          id="model-select"
+                          value={selectedModelId}
+                          onChange={(e) => setSelectedModelId(e.target.value)}
+                          className="w-full border border-blue-300 p-2 rounded-lg bg-white text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">-- Select an AI analysis file to download --</option>
+                          {availableModels.map((model) => (
+                            <option key={model.model_id} value={model.model_id}>
+                              {model.model_name || model.model_id} - {new Date(model.saved_at || model.created_at || '').toLocaleDateString()} ({(model.size / 1024).toFixed(1)}KB)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <button
+                        onClick={downloadSelectedModelMetadata}
+                        disabled={!selectedModelId || isLoadingFeatureImportance}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {isLoadingFeatureImportance ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Downloading...
+                          </>
+                        ) : (
+                          <>
+                            <span>📥</span>
+                            Download Metadata
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    
+                    {selectedModelId && (
+                      <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-200">
+                        <div className="text-xs text-blue-700">
+                          <strong>Selected:</strong> {availableModels.find(m => m.model_id === selectedModelId)?.model_name || selectedModelId}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={handleSend} className="flex gap-3">
                 <input
                   type="text"
                   className="flex-1 border border-gray-300 rounded-lg px-4 py-3 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
