@@ -41,6 +41,7 @@ const mainNavigation = [
   { name: 'Data Transformation', href: '/dashboard/data-transformation', icon: Zap },
   { name: 'Data Normalization', href: '/dashboard/data-normalization', icon: Target },
   { name: 'Feature Importance', href: '/dashboard/feature-importance', icon: Star },
+  { name: 'GANs Generate Synthetic Data', href: '/dashboard/gans-synthetic-data', icon: Brain },
   { name: 'Model Training', href: '/dashboard/model-training', icon: Settings },
   { name: 'AI Analysis', href: '/dashboard/ai-analysis', icon: Brain },
 ];

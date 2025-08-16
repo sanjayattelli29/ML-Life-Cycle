@@ -17,7 +17,8 @@ import {
   PlayCircle,
   Brain,
   Target,
-  Star
+  Star,
+  Upload
 } from 'lucide-react';
 
 interface TransformedDataset {
@@ -224,14 +225,23 @@ export default function ModelTraining() {
                 Train machine learning models on your processed datasets
               </p>
             </div>
-            <button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="flex items-center px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
+            <div className="flex items-center space-x-3">
+              <a
+                href="/dashboard/temo-model"
+                className="flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors text-white"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Dataset
+              </a>
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="flex items-center px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+            </div>
           </div>
         </div>
       </div>

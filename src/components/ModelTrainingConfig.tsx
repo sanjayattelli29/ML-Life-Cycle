@@ -43,6 +43,7 @@ interface TransformedDataset {
     targetColumn?: string;
     analysisType?: 'classification' | 'regression';
   };
+  isTemporary?: boolean;
 }
 
 interface HyperparameterConfig {
@@ -465,14 +466,29 @@ const ModelTrainingConfig: React.FC<ModelTrainingConfigProps> = ({
     try {
       console.log('Training with config:', config);
       
-      // First, get the CSV data through our proxy
-      const proxyUrl = `/api/proxy-csv?url=${encodeURIComponent(config.csv_url)}`;
-      const csvResponse = await fetch(proxyUrl);
-      if (!csvResponse.ok) {
-        throw new Error('Failed to fetch CSV data');
+      let csvText: string;
+      
+      // Check if this is a temporary dataset (local upload)
+      if (dataset.isTemporary) {
+        console.log('📁 Fetching temporary dataset directly:', config.csv_url);
+        // For temporary datasets, fetch directly from the local public URL
+        const response = await fetch(config.csv_url);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch temporary dataset: ${response.status} ${response.statusText}`);
+        }
+        csvText = await response.text();
+      } else {
+        console.log('☁️ Fetching cloud dataset through proxy:', config.csv_url);
+        // For cloud datasets, use the proxy
+        const proxyUrl = `/api/proxy-csv?url=${encodeURIComponent(config.csv_url)}`;
+        const csvResponse = await fetch(proxyUrl);
+        if (!csvResponse.ok) {
+          throw new Error('Failed to fetch CSV data through proxy');
+        }
+        csvText = await csvResponse.text();
       }
       
-      const csvText = await csvResponse.text();
+      console.log('✅ CSV data fetched successfully, length:', csvText.length);
       
       // Send training request to ML backend with CSV data instead of URL
       const trainingRequest = {
