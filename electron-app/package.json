@@ -1,12 +1,46 @@
 {
-    "name": "nextjs-desktop-app",
+    "name": "data-viz-ai-desktop",
     "version": "1.0.0",
+    "description": "Desktop version of Data Viz AI application",
+    "author": "sanjay",
+    "type": "commonjs",
     "main": "main.js",
+    "homepage": "./",
     "scripts": {
-        "start": "electron ."
+        "start": "electron .",
+        "dev": "cross-env NODE_ENV=development electron .",
+        "build": "electron-builder",
+        "dist": "electron-builder --win --publish=never",
+        "pack": "electron-builder --dir"
+    },
+    "build": {
+        "appId": "com.datavizai.desktop",
+        "productName": "Data Viz AI",
+        "directories": {
+            "output": "dist"
+        },
+        "files": [
+            "main.js",
+            "offline.html",
+            "assets/**/*"
+        ],
+        "win": {
+            "target": "nsis",
+            "icon": "assets/icon.ico",
+            "signAndEditExecutable": false,
+            "verifyUpdateCodeSignature": false
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true,
+            "createDesktopShortcut": true,
+            "createStartMenuShortcut": true
+        }
     },
     "devDependencies": {
         "electron": "^28.0.0",
-        "electron-packager": "^17.1.2"
+        "electron-builder": "^25.0.5",
+        "electron-reload": "^1.5.0",
+        "cross-env": "^7.0.3"
     }
 }

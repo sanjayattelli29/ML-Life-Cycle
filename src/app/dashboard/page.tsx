@@ -87,6 +87,9 @@ const MLLifecycleFlowSection = () => {
 
   return (
     <div className="mb-12">
+      {/* Setup Popup */}
+      <SetupPopup />
+      
       {/* ML Lifecycle Learning Header */}
       <div className="flex items-center gap-3 mb-8">
         <div className="w-1 h-8 bg-gradient-to-b from-purple-600 to-pink-600 rounded-full"></div>
@@ -225,6 +228,8 @@ const MLLifecycleFlowSection = () => {
   );
 };
 
+import SetupPopup from '@/components/SetupPopup';
+
 export default function Dashboard() {
   const { data: session } = useSession();
   const [datasets, setDatasets] = useState([]);
@@ -250,6 +255,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
+      <SetupPopup />
       {/* Header Section */}
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-4">

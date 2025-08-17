@@ -132,6 +132,16 @@ export default function Header() {
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:space-x-4">
           {session ? (
             <>
+              {/* Setup Guide Link */}
+              <Link 
+                href="/setup-guide" 
+                className="relative px-4 py-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-all duration-200 rounded-lg hover:bg-emerald-50/80 group flex items-center gap-2"
+              >
+                <WrenchScrewdriverIcon className="w-4 h-4" />
+                <span className="relative z-10">Setup Guide</span>
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-emerald-50 to-emerald-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+              </Link>
+
               {/* Dashboard Link */}
               <Link 
                 href="/dashboard" 
@@ -403,6 +413,15 @@ export default function Header() {
                           </div>
                         </div>
                       </div>
+
+                      <Link
+                        href="/setup-guide"
+                        className="-mx-3 block rounded-xl px-4 py-3 text-base font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50/80 transition-all duration-200 flex items-center gap-2"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <WrenchScrewdriverIcon className="w-5 h-5" />
+                        Setup Guide
+                      </Link>
 
                       <Link
                         href="/dashboard"
