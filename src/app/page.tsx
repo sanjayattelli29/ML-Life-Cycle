@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Play, Sparkles, Zap, Shield, TrendingUp, Users, Database, BarChart3, Brain, CheckCircle, Star, ArrowRight, ArrowDown, Menu, X, Download } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import SimpleAIChatbot from '@/components/SimpleAIChatbot';
 
 const EnhancedLanding = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -782,6 +783,9 @@ const EnhancedLanding = () => {
           </div>
         </div>
       </footer>
+      
+      {/* AI Chatbot */}
+      <SimpleAIChatbot />
     </div>
   );
 };

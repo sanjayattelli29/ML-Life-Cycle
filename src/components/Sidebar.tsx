@@ -35,6 +35,7 @@ import {
 const mainNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Data Table', href: '/dashboard/data-table', icon: Table },
+  { name: 'How to Use', href: '/dashboard/how-to-use', icon: ClipboardCheck },
   { name: 'Upload Dataset', href: '/dashboard/upload', icon: Upload },
   { name: 'Quality Metrics', href: '/dashboard/quality-metrics', icon: ClipboardCheck },
   { name: 'Pre-processing', href: '/dashboard/pre-processing', icon: ClipboardCheck },

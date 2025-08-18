@@ -14,6 +14,7 @@ import {
 
 // Component state and functions
 export default function AIAnalysis() {
+
   const { data: session } = useSession();
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [currentDataset, setCurrentDataset] = useState<Dataset | null>(null);
@@ -498,10 +499,13 @@ AI analysis files are created when you explicitly save them from the Model Train
     }
   };
 
+  // Function to log chat to n8n webhook
   const handleSend = async (e?: React.FormEvent) => {
     e?.preventDefault();
     
-    if (!input.trim() || !currentDataset) return;
+    if (!input.trim() || !currentDataset) {
+      return;
+    }
 
     const userMessage: Message = { sender: 'user', text: input };
     setMessages(prev => [...prev, userMessage]);
@@ -615,6 +619,21 @@ Provide detailed analysis with specific insights, actionable recommendations, an
     
     // Clean up the output
     result = result.replace(/\*/g, '');
+
+    // Log to n8n webhook
+    try {
+      await fetch("https://n8n.editwithsanjay.in/webhook/log-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          question: query, 
+          answer: result 
+        })
+      });
+      console.log('AI Analysis chat logged to n8n successfully');
+    } catch (error) {
+      console.error('Failed to log chat to n8n:', error);
+    }
     
     return result;
   };

@@ -3,7 +3,42 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronRightIcon, PhoneIcon, EnvelopeIcon, ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, ArrowLeftIcon, CheckCircleIcon, EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import SupportChatbot from '@/components/SupportChatbot';
+
+// Pre-defined questions and answers
+const STEP_QUESTIONS = {
+  1: [
+    { q: "I can't find the download link for the Backend Server.", a: "The download link is included in your setup instructions. Please check your email or official project page." },
+    { q: "My antivirus flagged the file as unsafe.", a: "This is a false positive. The file is safe. You can whitelist it or temporarily disable antivirus during installation." },
+    { q: "The download is very slow or keeps failing.", a: "Try a stable Wi-Fi or download using another browser (Chrome/Edge)." },
+    { q: "I downloaded but the file seems corrupted.", a: "Delete and re-download the ZIP. Ensure download completed fully." },
+  ],
+  2: [
+    { q: "I don't know how to extract the ZIP file.", a: "Right-click on the file → Select Extract All (Windows default) or use WinRAR/7zip." },
+    { q: "The extracted folder is empty.", a: "The download was incomplete/corrupted. Please re-download and extract again." },
+    { q: "I can't find Backend.exe inside the folder.", a: "Make sure you extracted all files, not just opened ZIP. Path should be: Backend Server\\DataVizAI_Launcher.exe." },
+    { q: "I don't have permission to extract files.", a: "Right-click → Run as Administrator or extract to a different location (like Desktop)." },
+  ],
+  3: [
+    { q: "Double-clicking does nothing.", a: "Ensure you extracted the folder properly, not running from inside ZIP. Try Run as Administrator." },
+    { q: "A Windows Defender/SmartScreen popup appears.", a: "Click More Info → Run Anyway (safe file)." },
+    { q: "It crashes immediately after opening.", a: "Make sure Python/Redis/etc. dependencies are installed by launcher automatically. If not, reinstall." },
+    { q: "I get 'Port already in use' error.", a: "Another app is using the backend port. Close that app or change backend config port." },
+  ],
+  4: [
+    { q: "CMD opens and closes immediately.", a: "Run from CMD manually to see errors → Open CMD → cd Backend Server → DataVizAI_Launcher.exe." },
+    { q: "Dependencies are not being installed.", a: "Ensure internet connection is stable. The launcher installs required Python packages." },
+    { q: "Success panel never appears.", a: "Wait until dependencies finish installing. If still stuck, re-run as Admin." },
+    { q: "Success panel appears but is blank.", a: "Close and re-open. If persists, delete venv folder and re-run launcher." },
+  ],
+  5: [
+    { q: "Status shows 'Unhealthy' instead of 'Healthy'.", a: "Restart launcher. Ensure port not blocked by firewall." },
+    { q: "Browser can't connect to backend.", a: "Open http://127.0.0.1:5000 to check if backend is running." },
+    { q: "Health check says 'Missing Dependency'.", a: "Re-run launcher as Admin to auto-install dependencies." },
+    { q: "It keeps looping and never shows status.", a: "Likely a firewall/port issue. Restart PC, then re-run launcher." },
+  ]
+};
 
 const SetupGuide = () => {
   const [activeStep, setActiveStep] = useState(1);
@@ -12,31 +47,31 @@ const SetupGuide = () => {
     {
       number: 1,
       title: "Download Backend Server",
-      description: "Download our ML backend server package to enable local model processing",
+      description: "1. Go to your welcome email\n2. Click the download link for Backend Server\n3. Save the ZIP file to a convenient location\n4. Make sure download completes fully\n5. If antivirus flags it, click 'Allow'/'Trust'",
       image: "/setup/step1.png"
     },
     {
       number: 2,
-      title: "Install Dependencies",
-      description: "Install required Python packages and dependencies",
+      title: "Extract Files",
+      description: "1. Right-click the downloaded ZIP file\n2. Select 'Extract All'\n3. Choose extraction location (e.g., Desktop)\n4. Wait for extraction to complete\n5. Verify Backend.exe exists in extracted folder",
       image: "/setup/step2.png"
     },
     {
       number: 3,
-      title: "Configure Environment",
-      description: "Set up your environment variables and configuration",
+      title: "Launch Backend",
+      description: "1. Navigate to extracted folder\n2. Right-click DataVizAI_Launcher.exe\n3. Select 'Run as Administrator'\n4. If Windows SmartScreen appears, click 'More Info' → 'Run Anyway'\n5. Wait for launcher window to appear",
       image: "/setup/step3.png"
     },
     {
       number: 4,
-      title: "Start Backend Server",
-      description: "Launch the backend server and verify it's running",
+      title: "Setup Dependencies",
+      description: "1. Keep launcher window open\n2. Wait for automatic package installation\n3. Do not close any CMD windows that appear\n4. Watch for success message\n5. If stuck, check your internet connection",
       image: "/setup/step4.png"
     },
     {
       number: 5,
-      title: "Connect to Platform",
-      description: "Connect your local backend to the DataViz-AI platform",
+      title: "Verify Connection",
+      description: "1. Wait for 'Status: Healthy' message\n2. Check backend URL: http://127.0.0.1:5000\n3. Ensure no firewall blocks\n4. Look for green checkmarks\n5. Click 'Connect' when ready",
       image: "/setup/step5.png"
     }
   ];
@@ -93,16 +128,15 @@ const SetupGuide = () => {
                       </div>
                       <h3 className="text-xl font-semibold text-gray-900">{step.title}</h3>
                     </div>
-                    <p className="text-gray-600 mb-6">{step.description}</p>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                        <span>Detailed instructions provided</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                        <span>Video tutorial available</span>
-                      </div>
+                    <div className="text-gray-600 mb-6 space-y-2">
+                      {step.description.split('\n').map((line, idx) => (
+                        <div key={idx} className="flex items-start gap-2">
+                          <div className="min-w-[24px] h-6 flex items-center">
+                            <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                          </div>
+                          <p>{line}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                   <div className="md:w-1/2 bg-gray-100 p-6 flex items-center justify-center">
@@ -155,6 +189,12 @@ const SetupGuide = () => {
           </div>
         </section>
       </main>
+
+      {/* Support Chatbot */}
+      <SupportChatbot
+        activeStep={activeStep}
+        stepQuestions={STEP_QUESTIONS}
+      />
     </div>
   );
 };

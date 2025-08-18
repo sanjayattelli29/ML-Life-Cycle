@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
+import SimpleAIChatbot from '@/components/SimpleAIChatbot';
 
 interface Dataset {
   _id: string;
@@ -576,6 +577,9 @@ export default function QualityMetrics() {
           </div>
         )}
       </div>
+
+      {/* AI Chatbot */}
+      <SimpleAIChatbot />
     </div>
   );
 }
