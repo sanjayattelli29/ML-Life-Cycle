@@ -221,7 +221,7 @@ const EnhancedLanding = () => {
                 </div>
                 <div className="space-y-4">
                   <a 
-                    href="https://drive.google.com/uc?export=download&id=1q6IELQBQPhYuKSaClXwWr9AoplWAgM6P"
+                    href="https://drive.usercontent.google.com/download?id=1rouSOEv7bAGsOM-mJTolwIdlcJxFZdQS&export=download&authuser=0"
                     download="MLServer.exe"
                     className="inline-flex items-center gap-2 bg-[#4945FF] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#3532d6] transition-all duration-300 w-full justify-center group"
                     onClick={(e) => {
@@ -234,7 +234,7 @@ const EnhancedLanding = () => {
                       button.innerHTML = `<div class="flex items-center gap-2"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Downloading...</div>`;
                       
                       // Start download
-                      window.location.href = "https://drive.google.com/uc?export=download&id=1q6IELQBQPhYuKSaClXwWr9AoplWAgM6P";
+                      window.location.href = "https://drive.usercontent.google.com/download?id=1rouSOEv7bAGsOM-mJTolwIdlcJxFZdQS&export=download&authuser=0";
                       
                       // Reset button after 3 seconds
                       setTimeout(() => {
