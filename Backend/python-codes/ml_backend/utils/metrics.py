@@ -66,7 +66,11 @@ def calculate_regression_metrics(y_true, y_pred):
     metrics['mean_absolute_error'] = float(mean_absolute_error(y_true, y_pred))
     
     # Additional metrics
-    metrics['mean_absolute_percentage_error'] = float(np.mean(np.abs((y_true - y_pred) / y_true)) * 100)
+    try:
+        mape = float(np.mean(np.abs((y_true - y_pred) / (y_true + np.finfo(float).eps))) * 100)
+        metrics['mean_absolute_percentage_error'] = min(mape, 1e6) if not np.isinf(mape) else 1e6
+    except:
+        metrics['mean_absolute_percentage_error'] = None
     
     # Residual statistics
     residuals = y_true - y_pred

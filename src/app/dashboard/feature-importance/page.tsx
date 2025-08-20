@@ -81,6 +81,7 @@ export default function FeatureImportance() {
   const [columnMetadata, setColumnMetadata] = useState<ColumnMetadata[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [targetColumn, setTargetColumn] = useState<string>('');
+  const [encodingMap, setEncodingMap] = useState<Record<string, string>>({});
   const [isAnalyzingColumns, setIsAnalyzingColumns] = useState(false);
   const [aiRecommendation, setAiRecommendation] = useState<AIRecommendation | null>(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
@@ -284,6 +285,92 @@ export default function FeatureImportance() {
     }
   };
 
+  // Generate encoding map for categorical target column
+  const generateEncodingMap = async (targetCol: string) => {
+    if (!selectedDataset || !targetCol) {
+      setEncodingMap({});
+      return;
+    }
+
+    const targetMetadata = columnMetadata.find(col => col.name === targetCol);
+    if (targetMetadata?.type === 'categorical') {
+      try {
+        // Fetch the complete dataset to get all unique values, not just preview
+        const proxyUrl = `/api/proxy-csv?url=${encodeURIComponent(selectedDataset.url)}`;
+        const response = await fetch(proxyUrl);
+        if (!response.ok) {
+          throw new Error('Failed to load dataset');
+        }
+        
+        const csvText = await response.text();
+        
+        // Parse the complete CSV to get all unique values
+        Papa.parse(csvText, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            const headers = results.meta.fields || [];
+            const targetIndex = headers.indexOf(targetCol);
+            
+            if (targetIndex !== -1) {
+              // Get ALL unique values from the complete dataset
+              const allRows = results.data as Record<string, string>[];
+              const uniqueValues = [...new Set(
+                allRows
+                  .map(row => row[targetCol])
+                  .filter(val => val && val.trim() !== '')
+              )].sort(); // Sort alphabetically for consistent ordering
+              
+              console.log(`Found ${uniqueValues.length} unique values for ${targetCol}:`, uniqueValues);
+              
+              const map = uniqueValues.reduce((acc, value, index) => {
+                acc[value] = (index + 1).toString(); // Start from 1 instead of 0
+                return acc;
+              }, {} as Record<string, string>);
+              
+              setEncodingMap(map);
+              
+              // Auto-download CSV mapping
+              if (Object.keys(map).length > 0) {
+                downloadEncodingMapCSV(map, targetCol);
+              }
+            }
+          },
+          error: (error) => {
+            console.error('Error parsing CSV for encoding map:', error);
+            toast.error('Failed to generate encoding map');
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching dataset for encoding map:', error);
+        toast.error('Failed to load dataset for encoding map');
+      }
+    } else {
+      setEncodingMap({});
+    }
+  };
+
+  // Download encoding map as CSV
+  const downloadEncodingMapCSV = (map: Record<string, string>, targetCol: string) => {
+    const csvContent = [
+      'Original_Value,Encoded_Value',
+      ...Object.entries(map).map(([original, encoded]) => `"${original}",${encoded}`)
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${targetCol}_encoding_map.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast.success(`🔄 Encoding map downloaded: ${targetCol}_encoding_map.csv`);
+  };
+
   // Progressive AI analysis with step-by-step loading
   const handleAIRecommendation = async () => {
     if (!targetColumn || columnMetadata.length === 0) {
@@ -464,15 +551,16 @@ List only the top 3-4 most important feature names for prediction. Respond with 
       
       // Process and encode the data
       const processedRows: string[][] = [];
-      let encodingMap: Record<string, string> = {};
       
-      // If target is categorical, create encoding map
-      if (targetMetadata?.type === 'categorical') {
+      // Use existing encoding map if available, otherwise create new one
+      let currentEncodingMap = encodingMap;
+      if (targetMetadata?.type === 'categorical' && Object.keys(encodingMap).length === 0) {
         const uniqueTargetValues = [...new Set(dataRows.map(row => row[targetIndex]).filter(val => val && val.trim() !== ''))];
-        encodingMap = uniqueTargetValues.reduce((map, value, index) => {
-          map[value] = index.toString();
+        currentEncodingMap = uniqueTargetValues.reduce((map, value, index) => {
+          map[value] = (index + 1).toString(); // Start from 1
           return map;
         }, {} as Record<string, string>);
+        setEncodingMap(currentEncodingMap);
       }
       
       // Create new headers: selected features + encoded target
@@ -490,7 +578,7 @@ List only the top 3-4 most important feature names for prediction. Respond with 
         // Add encoded target
         const targetValue = row[targetIndex] || '';
         if (targetMetadata?.type === 'categorical' && targetValue) {
-          newRow.push(encodingMap[targetValue] || '');
+          newRow.push(currentEncodingMap[targetValue] || '');
         } else {
           newRow.push(targetValue); // Keep numeric as is
         }
@@ -1002,7 +1090,11 @@ List only the top 3-4 most important feature names for prediction. Respond with 
                       </label>
                       <select
                         value={targetColumn}
-                        onChange={(e) => setTargetColumn(e.target.value)}
+                        onChange={(e) => {
+                          const newTarget = e.target.value;
+                          setTargetColumn(newTarget);
+                          generateEncodingMap(newTarget);
+                        }}
                         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                         style={{ color: '#111827' }}
                       >
@@ -1013,6 +1105,50 @@ List only the top 3-4 most important feature names for prediction. Respond with 
                           </option>
                         ))}
                       </select>
+
+                      {/* Encoding Map Table - Show when categorical target is selected */}
+                      {targetColumn && Object.keys(encodingMap).length > 0 && (
+                        <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-medium text-blue-900 flex items-center">
+                              <Download className="w-4 h-4 mr-2" />
+                              Target Encoding Map - {targetColumn}
+                            </h4>
+                            <button
+                              onClick={() => downloadEncodingMapCSV(encodingMap, targetColumn)}
+                              className="flex items-center px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                            >
+                              <Download className="w-3 h-3 mr-1" />
+                              Download CSV
+                            </button>
+                          </div>
+                          <p className="text-sm text-blue-700 mb-3">
+                            Your categorical target will be encoded using these mappings for training:
+                          </p>
+                          <div className="max-h-40 overflow-y-auto">
+                            <table className="w-full text-sm">
+                              <thead className="bg-blue-100">
+                                <tr>
+                                  <th className="px-3 py-2 text-left text-blue-900 font-medium">Original Value</th>
+                                  <th className="px-3 py-2 text-left text-blue-900 font-medium">Encoded Value</th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white">
+                                {Object.entries(encodingMap).map(([original, encoded]) => (
+                                  <tr key={original} className="border-b border-blue-100">
+                                    <td className="px-3 py-2 text-gray-800">{original}</td>
+                                    <td className="px-3 py-2 text-gray-800 font-mono">{encoded}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                            💡 <strong>Tip:</strong> Save this mapping! When your model predicts numbers (like &quot;2&quot;), 
+                            refer to this table to know it means &quot;{Object.entries(encodingMap).find(([, encoded]) => encoded === "2")?.[0] || 'value'}&quot;
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Column Analysis */}

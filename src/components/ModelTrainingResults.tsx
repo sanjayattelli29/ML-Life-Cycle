@@ -1835,6 +1835,44 @@ For more details, refer to the metadata file.
                   </div>
                 </div>
               )}
+              
+              {/* Encoding Map Guide Message */}
+              {/* Debug Info */}
+              <div className="mt-2 text-xs text-gray-500 bg-gray-100 p-2 rounded">
+                <strong>Debug Info:</strong><br/>
+                predictionResult exists: {predictionResult ? 'Yes' : 'No'}<br/>
+                selectedTargetColumn: {selectedTargetColumn}<br/>
+                task_type: {results.task_type}<br/>
+                prediction type: {typeof predictionResult?.prediction}<br/>
+                prediction value: {predictionResult?.prediction}
+              </div>
+              
+              {predictionResult && (
+                <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-start space-x-2">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">ℹ</span>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h6 className="font-medium text-blue-900 mb-1">🗂️ Understanding Your Prediction</h6>
+                      <p className="text-sm text-blue-800 leading-relaxed">
+                        Your model predicted <strong className="bg-blue-100 px-1 rounded">{predictionResult.prediction}</strong> (a number). 
+                        To understand what this means, please check your <strong>Downloads folder</strong> for the 
+                        <code className="bg-blue-100 px-1 rounded text-xs">{selectedTargetColumn}_encoding_map.csv</code> file 
+                        that was downloaded during feature analysis.
+                      </p>
+                      <div className="mt-2 text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded">
+                        <strong>Example:</strong> If the file shows &quot;apple,{Math.round(Number(predictionResult.prediction))}&quot; then your model predicted <strong>apple</strong>! 🍎
+                      </div>
+                      <p className="text-xs text-blue-600 mt-2 italic">
+                        💡 Ignore this message if your model is for classification in machine learning! Method or if you&apos;re satisfied with the numeric output.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
