@@ -1,0 +1,77 @@
+{
+  "model_id": "3c291da0-743c-4ffa-9f2f-827b6e702f6d",
+  "model_name": "svm",
+  "task_type": "regression",
+  "model_variant": "SVR",
+  "features": [
+    "Nitrogen",
+    "Phosphorus",
+    "Potassium",
+    "pH_Value",
+    "Humidity",
+    "Temperature",
+    "Rainfall",
+    "Yield"
+  ],
+  "target": "Crop_encoded",
+  "hyperparams": {},
+  "original_hyperparams": {
+    "task_type": "regression",
+    "model_variant": "SVR"
+  },
+  "metrics": {
+    "r2_score": 0.7293682805927939,
+    "mean_squared_error": 10.748596677338227,
+    "root_mean_squared_error": 3.2785052504667775,
+    "mean_absolute_error": 2.2097420021097975,
+    "mean_absolute_percentage_error": 36.969188244055275,
+    "residuals": {
+      "mean": 0.4339176390951297,
+      "std": 3.2496633917715747,
+      "min": -9.15566697334793,
+      "max": 11.899762899134004
+    },
+    "model_type": "svm",
+    "problem_type": "regression",
+    "hyperparameters": {
+      "C": 1.0,
+      "kernel": "rbf",
+      "gamma": "scale",
+      "degree": 3,
+      "coef0": 0.0,
+      "shrinking": true,
+      "probability": true,
+      "tol": 0.001,
+      "cache_size": 200,
+      "max_iter": -1,
+      "random_state": 42
+    },
+    "feature_count": 8,
+    "training_samples": 1760,
+    "test_samples": 441,
+    "num_support_vectors": 1615,
+    "support_vector_ratio": 0.9176136363636364,
+    "kernel_used": "rbf",
+    "performance_summary": {
+      "model_type": "regression",
+      "overall_performance": "Good",
+      "key_metrics": {
+        "r2_score": "0.729",
+        "rmse": "3.279"
+      }
+    },
+    "preprocessing": {
+      "feature_encoders": true,
+      "target_encoder": false,
+      "scaled_features": true
+    }
+  },
+  "created_at": "2025-08-21T12:57:09.221561",
+  "csv_url": null,
+  "r2_model_path": "models/68a6a498ca5562bbe8f28609/transformed_Crop_Yield_Prediction_1755752473397_1755752519171_normalized_for_feature_importance_feature_analysis_ready/3c291da0-743c-4ffa-9f2f-827b6e702f6d.pkl",
+  "r2_metadata_path": "models/68a6a498ca5562bbe8f28609/transformed_Crop_Yield_Prediction_1755752473397_1755752519171_normalized_for_feature_importance_feature_analysis_ready/3c291da0-743c-4ffa-9f2f-827b6e702f6d_metadata.json",
+  "user_id": "68a6a498ca5562bbe8f28609",
+  "dataset_name": "transformed_Crop_Yield_Prediction_1755752473397_1755752519171_normalized_for_feature_importance_feature_analysis_ready",
+  "saved_to_cloud": true,
+  "cloud_uploaded_at": "2025-08-21T12:57:12.749498"
+}

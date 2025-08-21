@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Data Analyzer - Setup Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 50px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #5a67d8;
+        }
+
+        .logo-icon {
+            background: #5a67d8;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #4a5568;
+            font-weight: 500;
+            font-size: 1em;
+        }
+
+        .start-trial-btn {
+            background: linear-gradient(135deg, #5a67d8 0%, #9f7aea 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            position: relative;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .platform-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .hero-title {
+            font-size: 4em;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 10px;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 4em;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 30px;
+            line-height: 1.1;
+        }
+
+        .hero-description {
+            color: white;
+            font-size: 1.3em;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .hero-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1em;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            line-height: 1.7;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, #5a67d8 0%, #667eea 100%);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .secondary-btn {
+            background: linear-gradient(135deg, #9f7aea 0%, #ed64a6 100%);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .demo-btn {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1em;
+        }
+
+        .features-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-bottom: 60px;
+        }
+
+        .feature-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .feature-icon {
+            color: #48bb78;
+            font-size: 1.2em;
+        }
+
+        .setup-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 60px 40px;
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 50px;
+        }
+
+        .setup-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .step-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #5a67d8 0%, #9f7aea 100%);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 0 auto 20px;
+        }
+
+        .step-title {
+            font-size: 1.4em;
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .step-description {
+            color: #4a5568;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .step-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .step-features li {
+            color: #4a5568;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .step-features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #48bb78;
+            font-weight: bold;
+        }
+
+        .download-section {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .download-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 50px 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .download-features {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .download-feature {
+            text-align: center;
+            color: #4a5568;
+        }
+
+        .download-icon {
+            background: linear-gradient(135deg, #5a67d8 0%, #9f7aea 100%);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 1.5em;
+        }
+
+        .version-info {
+            color: #718096;
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+
+        .video-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 50px 40px;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .video-container {
+            max-width: 800px;
+            margin: 30px auto 0;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .support-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 50px 40px;
+            text-align: center;
+        }
+
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .contact-item {
+            text-align: center;
+        }
+
+        .contact-type {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .contact-detail {
+            color: #5a67d8;
+            font-size: 1.1em;
+        }
+
+        .contact-detail a {
+            color: #5a67d8;
+            text-decoration: none;
+        }
+
+        .success-badge {
+            position: absolute;
+            top: 140px;
+            right: 30px;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #48bb78;
+        }
+
+        .bottom-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .hero-title, .hero-subtitle {
+                font-size: 2.5em;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .features-row,
+            .download-features,
+            .contact-info {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .container {
+                padding: 40px 15px;
+            }
+
+            .success-badge {
+                position: static;
+                margin: 20px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon">📊</div>
+            Smart Data Analyzer
+        </div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#reviews">Reviews</a>
+            <a href="#" class="start-trial-btn">Start Free Trial</a>
+        </div>
+    </nav>
+
+    <!-- Success Badge -->
+    <div class="success-badge">
+        📈 98% Learning Success
+    </div>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="platform-badge">
+                ⚙️ EDUCATIONAL ML PLATFORM
+            </div>
+            <h1 class="hero-title">Master the Complete</h1>
+            <h2 class="hero-subtitle">ML Lifecycle Journey</h2>
+            <p class="hero-description">Learn Machine Learning End-to-End</p>
+            <p class="hero-text">
+                From data ingestion to model deployment - master every step of the ML lifecycle with hands-on learning, interactive tutorials, and collaborative projects designed for students and educators.
+            </p>
+            
+            <div class="cta-buttons">
+                <a href="https://data-viz-ai.netlify.app/" class="primary-btn">Start Learning Journey →</a>
+                <a href="https://data-viz-ai.netlify.app/" class="secondary-btn">Get Started with ML Server ↓</a>
+                <a href="#video" class="demo-btn">▶ Watch Learning Demo (2 min)</a>
+            </div>
+
+            <div class="features-row">
+                <div class="feature-badge">
+                    <span class="feature-icon">✓</span>
+                    Free for students
+                </div>
+                <div class="feature-badge">
+                    <span class="feature-icon">✓</span>
+                    Interactive learning
+                </div>
+                <div class="feature-badge">
+                    <span class="feature-icon">✓</span>
+                    Collaborative platform
+                </div>
+            </div>
+        </div>
+
+        <!-- Setup Steps Section -->
+        <div class="setup-section">
+            <h2 class="section-title">Setup Guide</h2>
+            <p style="text-align: center; color: #4a5568; margin-bottom: 40px; font-size: 1.1em;">
+                Follow these steps to set up your local ML backend server and get started with DataViz-AI
+            </p>
+            
+            <div class="setup-steps">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Download Backend Server</div>
+                    <div class="step-description">Download our ML backend server package to enable local model processing</div>
+                    <ul class="step-features">
+                        <li>Detailed instructions provided</li>
+                        <li>Video tutorial available</li>
+                    </ul>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Install Dependencies</div>
+                    <div class="step-description">Install required Python packages and dependencies</div>
+                    <ul class="step-features">
+                        <li>Detailed instructions provided</li>
+                        <li>Video tutorial available</li>
+                    </ul>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Configure Environment</div>
+                    <div class="step-description">Set up your environment variables and configuration</div>
+                    <ul class="step-features">
+                        <li>Detailed instructions provided</li>
+                        <li>Video tutorial available</li>
+                    </ul>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <div class="step-title">Start Backend Server</div>
+                    <div class="step-description">Launch the backend server and verify it's running</div>
+                    <ul class="step-features">
+                        <li>Detailed instructions provided</li>
+                        <li>Video tutorial available</li>
+                    </ul>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">5</div>
+                    <div class="step-title">Connect to Platform</div>
+                    <div class="step-description">Connect your local backend to the DataViz-AI platform</div>
+                    <ul class="step-features">
+                        <li>Detailed instructions provided</li>
+                        <li>Video tutorial available</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Download Section -->
+        <div class="download-section">
+            <div class="download-card">
+                <h2 style="font-size: 2.2em; color: #2d3748; margin-bottom: 20px; font-weight: 700;">Get Started with ML Server</h2>
+                <p style="color: #4a5568; font-size: 1.1em; margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                    Download our ML Server application to start your machine learning journey. Run models locally and experience seamless data processing.
+                </p>
+                
+                <div class="download-features">
+                    <div class="download-feature">
+                        <div class="download-icon">⚡</div>
+                        <div>Easy one-click installation</div>
+                    </div>
+                    <div class="download-feature">
+                        <div class="download-icon">💻</div>
+                        <div>Local model processing</div>
+                    </div>
+                    <div class="download-feature">
+                        <div class="download-icon">🔒</div>
+                        <div>Secure data handling</div>
+                    </div>
+                </div>
+
+                <a href="https://data-viz-ai.netlify.app/" class="primary-btn" style="font-size: 1.2em;">Download ML Server (.exe)</a>
+                <div class="version-info">Version 1.0.0 | Windows 10/11 64-bit</div>
+            </div>
+        </div>
+
+        <!-- Video Section -->
+        <div class="video-section" id="video">
+            <h2 style="font-size: 2.2em; color: #2d3748; margin-bottom: 20px; font-weight: 700;">Watch Learning Demo</h2>
+            <p style="color: #4a5568; font-size: 1.1em;">Learn how to set up and use our ML platform in 2 minutes</p>
+            
+            <div class="video-container">
+                <video controls>
+                    <source src="https://res.cloudinary.com/dws3beqwu/video/upload/v1750513405/wli81fl1tsjg8ui0qovp.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+
+        <!-- Bottom Section -->
+        <div class="bottom-section">
+            <h2 style="font-size: 2em; color: #2d3748; margin-bottom: 20px; font-weight: 700;">Interactive ML Learning Platform for Students & Educators</h2>
+        </div>
+
+        <!-- Support Section -->
+        <div class="support-section">
+            <h2 style="font-size: 2.2em; color: #2d3748; margin-bottom: 20px; font-weight: 700;">Need Help?</h2>
+            <p style="color: #4a5568; font-size: 1.1em;">
+                Our support team is ready to assist you with any questions or issues
+            </p>
+            
+            <div class="contact-info">
+                <div class="contact-item">
+                    <div class="contact-type">Email Support</div>
+                    <div class="contact-detail">
+                        <a href="mailto:datavizai29@gmail.com">datavizai29@gmail.com</a>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-type">Phone Support</div>
+                    <div class="contact-detail">
+                        <a href="tel:+918977300290">+91 89773 00290</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add some interactive feedback for buttons
+        document.querySelectorAll('.primary-btn, .secondary-btn, .start-trial-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+{
+  "model_id": "1a2b2985-503a-4d7f-9d85-12f696c15086",
+  "model_name": "random_forest",
+  "task_type": "regression",
+  "model_variant": "RandomForestRegressor",
+  "features": [
+    "Nitrogen",
+    "Phosphorus",
+    "Potassium",
+    "pH_Value",
+    "Humidity",
+    "Temperature",
+    "Rainfall",
+    "Yield"
+  ],
+  "target": "Crop_encoded",
+  "hyperparams": {},
+  "original_hyperparams": {
+    "task_type": "regression",
+    "model_variant": "RandomForestRegressor"
+  },
+  "metrics": {
+    "r2_score": 0.8888141789624713,
+    "mean_squared_error": 4.4159330221484865,
+    "root_mean_squared_error": 2.1014121495195766,
+    "mean_absolute_error": 0.8470389569079502,
+    "mean_absolute_percentage_error": 18.362764145351303,
+    "residuals": {
+      "mean": 0.11958879954056624,
+      "std": 2.098006563662977,
+      "min": -6.970000000000001,
+      "max": 12.701348494219877
+    },
+    "model_type": "random_forest",
+    "problem_type": "regression",
+    "task_type": "regression",
+    "model_variant": "RandomForestRegressor",
+    "model_class": "RandomForestRegressor",
+    "hyperparameters": {
+      "n_estimators": 100,
+      "max_depth": null,
+      "min_samples_split": 2,
+      "min_samples_leaf": 1,
+      "max_features": null,
+      "bootstrap": true,
+      "random_state": 42,
+      "n_jobs": -1
+    },
+    "feature_count": 8,
+    "training_samples": 1760,
+    "test_samples": 441,
+    "n_estimators_used": 100,
+    "feature_importance": {
+      "Phosphorus": 0.23983130334091768,
+      "Rainfall": 0.23130540506127212,
+      "Humidity": 0.2081089788038826,
+      "Potassium": 0.1501532771322081,
+      "Nitrogen": 0.1047076780778623,
+      "pH_Value": 0.03214942846491141,
+      "Temperature": 0.02803523666113232,
+      "Yield": 0.005708692457813419
+    },
+    "tree_statistics": {
+      "avg_tree_depth": 14.29,
+      "max_tree_depth": 18,
+      "min_tree_depth": 11
+    },
+    "oob_score": 0.8817159619466682,
+    "performance_summary": {
+      "model_type": "regression",
+      "overall_performance": "Good",
+      "key_metrics": {
+        "r2_score": "0.889",
+        "rmse": "2.101"
+      }
+    },
+    "preprocessing": {
+      "feature_encoders": true,
+      "target_encoder": false,
+      "scaled_features": false
+    }
+  },
+  "created_at": "2025-08-21T12:56:38.254488",
+  "csv_url": null,
+  "r2_model_path": "models/68a6a498ca5562bbe8f28609/transformed_Crop_Yield_Prediction_1755752473397_1755752519171_normalized_for_feature_importance_feature_analysis_ready/1a2b2985-503a-4d7f-9d85-12f696c15086.pkl",
+  "r2_metadata_path": "models/68a6a498ca5562bbe8f28609/transformed_Crop_Yield_Prediction_1755752473397_1755752519171_normalized_for_feature_importance_feature_analysis_ready/1a2b2985-503a-4d7f-9d85-12f696c15086_metadata.json",
+  "user_id": "68a6a498ca5562bbe8f28609",
+  "dataset_name": "transformed_Crop_Yield_Prediction_1755752473397_1755752519171_normalized_for_feature_importance_feature_analysis_ready",
+  "saved_to_cloud": true,
+  "cloud_uploaded_at": "2025-08-21T12:56:41.996790"
+}

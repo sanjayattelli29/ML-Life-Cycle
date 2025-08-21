@@ -1,0 +1,119 @@
+{
+  "model_id": "561eee47-ce05-49a5-a3b2-33660f5f0680",
+  "model_name": "random_forest",
+  "task_type": "classification",
+  "model_variant": "RandomForestClassifier",
+  "features": [
+    "CGPA",
+    "Academic_Performance",
+    "IQ",
+    "Internship_Experience"
+  ],
+  "target": "Placement_encoded",
+  "hyperparams": {},
+  "original_hyperparams": {
+    "task_type": "classification",
+    "model_variant": "RandomForestClassifier"
+  },
+  "metrics": {
+    "accuracy": 0.8605697151424287,
+    "precision": 0.842801422735903,
+    "recall": 0.8605697151424287,
+    "f1_score": 0.8430664666459969,
+    "confusion_matrix": [
+      [
+        1605,
+        64
+      ],
+      [
+        215,
+        117
+      ]
+    ],
+    "roc_auc": 0.8318170825903975,
+    "class_report": {
+      "0": {
+        "precision": 0.8818681318681318,
+        "recall": 0.9616536848412223,
+        "f1-score": 0.9200343938091143,
+        "support": 1669.0
+      },
+      "1": {
+        "precision": 0.6464088397790055,
+        "recall": 0.35240963855421686,
+        "f1-score": 0.45614035087719296,
+        "support": 332.0
+      },
+      "accuracy": 0.8605697151424287,
+      "macro avg": {
+        "precision": 0.7641384858235687,
+        "recall": 0.6570316616977195,
+        "f1-score": 0.6880873723431536,
+        "support": 2001.0
+      },
+      "weighted avg": {
+        "precision": 0.842801422735903,
+        "recall": 0.8605697151424287,
+        "f1-score": 0.8430664666459969,
+        "support": 2001.0
+      }
+    },
+    "num_classes": 2,
+    "classes": [
+      0,
+      1
+    ],
+    "model_type": "random_forest",
+    "problem_type": "classification",
+    "task_type": "classification",
+    "model_variant": "RandomForestClassifier",
+    "model_class": "RandomForestClassifier",
+    "hyperparameters": {
+      "n_estimators": 100,
+      "max_depth": null,
+      "min_samples_split": 2,
+      "min_samples_leaf": 1,
+      "max_features": "sqrt",
+      "bootstrap": true,
+      "random_state": 42,
+      "n_jobs": -1
+    },
+    "feature_count": 4,
+    "training_samples": 8000,
+    "test_samples": 2001,
+    "n_estimators_used": 100,
+    "feature_importance": {
+      "CGPA": 0.5106346060581867,
+      "IQ": 0.3648845042755223,
+      "Academic_Performance": 0.09675698115419047,
+      "Internship_Experience": 0.02772390851210055
+    },
+    "tree_statistics": {
+      "avg_tree_depth": 25.84,
+      "max_tree_depth": 32,
+      "min_tree_depth": 20
+    },
+    "oob_score": 0.85975,
+    "performance_summary": {
+      "model_type": "classification",
+      "overall_performance": "Good",
+      "key_metrics": {
+        "accuracy": "0.861",
+        "f1_score": "0.843"
+      }
+    },
+    "preprocessing": {
+      "feature_encoders": true,
+      "target_encoder": true,
+      "scaled_features": false
+    }
+  },
+  "created_at": "2025-08-21T13:08:42.933511",
+  "csv_url": null,
+  "r2_model_path": "models/68300b10cddbae9779d24a9a/transformed_college_student_placement_dataset_1753015477851_1753016499444_1753024455443_normalized_1753031734922_1754373663619_normalized_for_feature_importance_feature_analysis_ready/561eee47-ce05-49a5-a3b2-33660f5f0680.pkl",
+  "r2_metadata_path": "models/68300b10cddbae9779d24a9a/transformed_college_student_placement_dataset_1753015477851_1753016499444_1753024455443_normalized_1753031734922_1754373663619_normalized_for_feature_importance_feature_analysis_ready/561eee47-ce05-49a5-a3b2-33660f5f0680_metadata.json",
+  "user_id": "68300b10cddbae9779d24a9a",
+  "dataset_name": "transformed_college_student_placement_dataset_1753015477851_1753016499444_1753024455443_normalized_1753031734922_1754373663619_normalized_for_feature_importance_feature_analysis_ready",
+  "saved_to_cloud": true,
+  "cloud_uploaded_at": "2025-08-21T13:08:50.706519"
+}
