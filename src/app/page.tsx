@@ -219,40 +219,34 @@ const EnhancedLanding = () => {
                     <span className="text-gray-700">Secure data handling</span>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  <a 
-                    href="https://drive.usercontent.google.com/download?id=1rouSOEv7bAGsOM-mJTolwIdlcJxFZdQS&export=download&authuser=0"
-                    download="MLServer.exe"
-                    className="inline-flex items-center gap-2 bg-[#4945FF] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#3532d6] transition-all duration-300 w-full justify-center group"
-                    onClick={(e) => {
-                      // Prevent default behavior
-                      e.preventDefault();
-                      
-                      // Create loading state in the button
-                      const button = e.currentTarget;
-                      const originalContent = button.innerHTML;
-                      button.innerHTML = `<div class="flex items-center gap-2"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Downloading...</div>`;
-                      
-                      // Start download
-                      window.location.href = "https://drive.usercontent.google.com/download?id=1rouSOEv7bAGsOM-mJTolwIdlcJxFZdQS&export=download&authuser=0";
-                      
-                      // Reset button after 3 seconds
-                      setTimeout(() => {
-                        button.innerHTML = originalContent;
-                      }, 3000);
-                    }}
-                  >
-                    <Download className="w-5 h-5 group-hover:animate-bounce" />
-                    Download ML Server (.exe)
-                  </a>
-                  {/* <a 
-                    href="YOUR_CLOUDINARY_DOWNLOAD_LINK_HERE"
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-300 w-full justify-center"
-                  >
-                    <Download className="w-5 h-5" />
-                    Download Backend Server (.exe)
-                  </a> */}
-                </div>
+               <div className="space-y-4">
+  <a 
+    href="https://github.com/sanjayattelli29/ML-Life-Cycle/raw/master/Backend/Python%20Server.zip"
+    download="PythonServer.zip"
+    className="inline-flex items-center gap-2 bg-[#4945FF] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#3532d6] transition-all duration-300 w-full justify-center group"
+    onClick={(e) => {
+      // Prevent default behavior
+      e.preventDefault();
+      
+      // Create loading state in the button
+      const button = e.currentTarget;
+      const originalContent = button.innerHTML;
+      button.innerHTML = `<div class="flex items-center gap-2"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Downloading...</div>`;
+      
+      // Start download
+      window.location.href = "https://github.com/sanjayattelli29/ML-Life-Cycle/raw/master/Backend/Python%20Server.zip";
+      
+      // Reset button after 3 seconds
+      setTimeout(() => {
+        button.innerHTML = originalContent;
+      }, 3000);
+    }}
+  >
+    <Download className="w-5 h-5 group-hover:animate-bounce" />
+    Download Python Server (.zip)
+  </a>
+</div>
+
                 <p className="mt-4 text-sm text-gray-500">
                   Version 1.0.0 | Windows 10/11 64-bit
                 </p>
