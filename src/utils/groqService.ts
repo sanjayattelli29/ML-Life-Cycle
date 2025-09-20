@@ -37,7 +37,7 @@ Focus on what this value means and if it's good/bad/average. Keep it simple and 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama3-70b-8192',
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
         messages: [{ role: 'user', content: concisePrompt }],
         max_tokens: 300,
         temperature: 0.7,

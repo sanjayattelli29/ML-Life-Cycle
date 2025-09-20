@@ -419,7 +419,7 @@ List only the top 3-4 most important feature names for prediction. Respond with 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'llama3-70b-8192',
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
           messages: [{ role: 'user', content: featuresPrompt }],
           temperature: 0.3,
           max_tokens: 200,
@@ -455,7 +455,7 @@ List only the top 3-4 most important feature names for prediction. Respond with 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'llama3-70b-8192',
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
           messages: [{ role: 'user', content: insightsPrompt }],
           temperature: 0.3,
           max_tokens: 150,

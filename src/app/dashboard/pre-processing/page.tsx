@@ -51,15 +51,15 @@ const flaskPreprocessingOptions = [
     lightColor: 'bg-green-50',
     textColor: 'text-green-700'
   },
-  { 
-    id: 'invalid_data', 
-    title: 'Invalid Data', 
-    description: 'Fix invalid data using statistical tests (Chi-square)',
-    icon: '⚠️',
-    color: 'bg-yellow-500',
-    lightColor: 'bg-yellow-50',
-    textColor: 'text-yellow-700'
-  },
+  // { 
+  //   id: 'invalid_data', 
+  //   title: 'Invalid Data', 
+  //   description: 'Fix invalid data using statistical tests (Chi-square)',
+  //   icon: '⚠️',
+  //   color: 'bg-yellow-500',
+  //   lightColor: 'bg-yellow-50',
+  //   textColor: 'text-yellow-700'
+  // },
   { 
     id: 'outliers', 
     title: 'Outliers', 
@@ -87,15 +87,15 @@ const flaskPreprocessingOptions = [
     lightColor: 'bg-indigo-50',
     textColor: 'text-indigo-700'
   },
-  { 
-    id: 'class_imbalance', 
-    title: 'Class Imbalance', 
-    description: 'Balance classes using SMOTE',
-    icon: '⚖️',
-    color: 'bg-pink-500',
-    lightColor: 'bg-pink-50',
-    textColor: 'text-pink-700'
-  },
+  // { 
+  //   id: 'class_imbalance', 
+  //   title: 'Class Imbalance', 
+  //   description: 'Balance classes using SMOTE',
+  //   icon: '⚖️',
+  //   color: 'bg-pink-500',
+  //   lightColor: 'bg-pink-50',
+  //   textColor: 'text-pink-700'
+  // },
   { 
     id: 'data_type_mismatch', 
     title: 'Data Type Mismatch', 
@@ -105,42 +105,42 @@ const flaskPreprocessingOptions = [
     lightColor: 'bg-orange-50',
     textColor: 'text-orange-700'
   },
-  { 
-    id: 'feature_correlation', 
-    title: 'Feature Correlation', 
-    description: 'Remove highly correlated features using Pearson correlation',
-    icon: '🔗',
-    color: 'bg-teal-500',
-    lightColor: 'bg-teal-50',
-    textColor: 'text-teal-700'
-  },
-  { 
-    id: 'low_variance', 
-    title: 'Low Variance Features', 
-    description: 'Remove low variance features using VarianceThreshold',
-    icon: '📉',
-    color: 'bg-cyan-500',
-    lightColor: 'bg-cyan-50',
-    textColor: 'text-cyan-700'
-  },
-  { 
-    id: 'mean_median_drift', 
-    title: 'Mean-Median Drift', 
-    description: 'Handle skewed distributions using percentage drift analysis',
-    icon: '📈',
-    color: 'bg-emerald-500',
-    lightColor: 'bg-emerald-50',
-    textColor: 'text-emerald-700'
-  },
-  { 
-    id: 'range_violations', 
-    title: 'Range Violations', 
-    description: 'Fix range violations using domain-specific rules',
-    icon: '🎚️',
-    color: 'bg-violet-500',
-    lightColor: 'bg-violet-50',
-    textColor: 'text-violet-700'
-  },
+  // { 
+  //   id: 'feature_correlation', 
+  //   title: 'Feature Correlation', 
+  //   description: 'Remove highly correlated features using Pearson correlation',
+  //   icon: '🔗',
+  //   color: 'bg-teal-500',
+  //   lightColor: 'bg-teal-50',
+  //   textColor: 'text-teal-700'
+  // },
+  // { 
+  //   id: 'low_variance', 
+  //   title: 'Low Variance Features', 
+  //   description: 'Remove low variance features using VarianceThreshold',
+  //   icon: '📉',
+  //   color: 'bg-cyan-500',
+  //   lightColor: 'bg-cyan-50',
+  //   textColor: 'text-cyan-700'
+  // },
+  // { 
+  //   id: 'mean_median_drift', 
+  //   title: 'Mean-Median Drift', 
+  //   description: 'Handle skewed distributions using percentage drift analysis',
+  //   icon: '📈',
+  //   color: 'bg-emerald-500',
+  //   lightColor: 'bg-emerald-50',
+  //   textColor: 'text-emerald-700'
+  // },
+  // { 
+  //   id: 'range_violations', 
+  //   title: 'Range Violations', 
+  //   description: 'Fix range violations using domain-specific rules',
+  //   icon: '🎚️',
+  //   color: 'bg-violet-500',
+  //   lightColor: 'bg-violet-50',
+  //   textColor: 'text-violet-700'
+  // },
 ];
 
 // Types for stats objects
@@ -511,7 +511,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
             'Authorization': `Bearer ${groqApiKey}`,
           },
           body: JSON.stringify({
-            model: 'llama3-8b-8192',
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
             temperature: 0.3,
             max_tokens: 600,
             messages: [

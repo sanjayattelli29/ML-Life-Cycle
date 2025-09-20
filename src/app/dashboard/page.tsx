@@ -34,7 +34,7 @@ const MLLifecycleFlowSection = () => {
     {
       id: 2,
       title: "Data Quality Assessment",
-      description: "Learn to evaluate data quality with 26+ automated metrics and comprehensive analysis",
+      description: "Learn to evaluate data quality with 6+ automated metrics and comprehensive analysis",
       icon: BeakerIcon,
       color: "from-emerald-500 to-teal-600",
       bgColor: "from-emerald-50 to-teal-50"

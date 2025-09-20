@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Lifecycle Journey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f7fa;
+            padding: 40px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header h2 {
+            color: #34495e;
+            font-size: 1.8em;
+            margin-bottom: 30px;
+        }
+        
+        .workflow-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            position: relative;
+        }
+        
+        .workflow-step {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        
+        .workflow-step:hover {
+            transform: translateY(-5px);
+        }
+        
+        .workflow-step h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .workflow-step ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .workflow-step li {
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .workflow-step li:before {
+            content: "•";
+            color: #3498db;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        
+        .connection-line {
+            position: absolute;
+            background: #3498db;
+            z-index: -1;
+        }
+        
+        .horizontal-line {
+            height: 2px;
+        }
+        
+        .vertical-line {
+            width: 2px;
+        }
+        /* Specific step styling */
+        
+        .step-upload {
+            grid-column: 1;
+            grid-row: 1;
+            border-left: 4px solid #3498db;
+        }
+        
+        .step-quality {
+            grid-column: 2;
+            grid-row: 1;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .step-preprocessing {
+            grid-column: 3;
+            grid-row: 1;
+            border-left: 4px solid #2ecc71;
+        }
+        
+        .step-transformation {
+            grid-column: 4;
+            grid-row: 1;
+            border-left: 4px solid #f1c40f;
+        }
+        
+        .step-normalization {
+            grid-column: 1;
+            grid-row: 2;
+            border-left: 4px solid #9b59b6;
+        }
+        
+        .step-feature {
+            grid-column: 2;
+            grid-row: 2;
+            border-left: 4px solid #e67e22;
+        }
+        
+        .step-model {
+            grid-column: 3;
+            grid-row: 2;
+            border-left: 4px solid #1abc9c;
+        }
+        
+        .step-training {
+            grid-column: 4;
+            grid-row: 2;
+            border-left: 4px solid #34495e;
+        }
+        
+        .step-analysis {
+            grid-column: 1/3;
+            grid-row: 3;
+            border-left: 4px solid #d35400;
+        }
+        
+        .step-deployment {
+            grid-column: 3/5;
+            grid-row: 3;
+            border-left: 4px solid #27ae60;
+        }
+        /* Arrow styling */
+        
+        .arrow {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-top: 3px solid #3498db;
+            border-right: 3px solid #3498db;
+            transform: rotate(45deg);
+        }
+        
+        .workflow-step::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 2px;
+            background: #3498db;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .workflow-step:last-child::after {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Master the Complete ML Lifecycle Journey</h1>
+        <h2>Learn Machine Learning End-to-End</h2>
+    </div>
+
+    <div class="workflow-container">
+        <div class="workflow-grid">
+            <!-- Data Upload & Ingestion -->
+            <div class="workflow-step step-upload">
+                <h3>Data Upload & Ingestion</h3>
+                <ul>
+                    <li>Upload Dataset</li>
+                    <li>Data Ingestion Process</li>
+                    <li>Initial Data Review</li>
+                </ul>
+            </div>
+
+            <!-- Data Quality Assessment -->
+            <div class="workflow-step step-quality">
+                <h3>Data Quality Assessment</h3>
+                <ul>
+                    <li>Missing Values Check</li>
+                    <li>Duplicate Records</li>
+                    <li>Outlier Detection</li>
+                    <li>Format Consistency</li>
+                    <li>Cardinality Analysis</li>
+                </ul>
+            </div>
+
+            <!-- Data Preprocessing -->
+            <div class="workflow-step step-preprocessing">
+                <h3>Data Preprocessing</h3>
+                <ul>
+                    <li>Data Cleaning</li>
+                    <li>Handle Missing Values</li>
+                    <li>Encode Categories</li>
+                    <li>Feature Engineering</li>
+                </ul>
+            </div>
+
+            <!-- Data Transformation -->
+            <div class="workflow-step step-transformation">
+                <h3>Data Transformation</h3>
+                <ul>
+                    <li>Add/Remove Rows</li>
+                    <li>Add/Remove Columns</li>
+                    <li>Excel-like Editing</li>
+                    <li>Data Structuring</li>
+                </ul>
+            </div>
+
+            <!-- Data Normalization -->
+            <div class="workflow-step step-normalization">
+                <h3>Data Normalization</h3>
+                <ul>
+                    <li>Z-score Normalization</li>
+                    <li>Min-Max Scaling</li>
+                    <li>Column-wise Application</li>
+                </ul>
+            </div>
+
+            <!-- Feature Importance -->
+            <div class="workflow-step step-feature">
+                <h3>Feature Importance</h3>
+                <ul>
+                    <li>Classification Analysis</li>
+                    <li>Regression Analysis</li>
+                    <li>Feature Selection</li>
+                </ul>
+            </div>
+
+            <!-- Model Selection -->
+            <div class="workflow-step step-model">
+                <h3>Model Selection</h3>
+                <ul>
+                    <li>Random Forest</li>
+                    <li>XGBoost</li>
+                    <li>SVM</li>
+                    <li>KMeans Clustering</li>
+                </ul>
+            </div>
+
+            <!-- Model Training & Testing -->
+            <div class="workflow-step step-training">
+                <h3>Model Training & Testing</h3>
+                <ul>
+                    <li>Train Models</li>
+                    <li>Hyperparameter Tuning</li>
+                    <li>Test Data Evaluation</li>
+                </ul>
+            </div>
+
+            <!-- AI Analysis & Metrics -->
+            <div class="workflow-step step-analysis">
+                <h3>AI Analysis & Performance Metrics</h3>
+                <ul>
+                    <li>Model Comparison</li>
+                    <li>Accuracy Metrics</li>
+                    <li>ROC Curves</li>
+                    <li>Confusion Matrix</li>
+                </ul>
+            </div>
+
+            <!-- Results & Deployment -->
+            <div class="workflow-step step-deployment">
+                <h3>Results & Deployment</h3>
+                <ul>
+                    <li>Model Deployment</li>
+                    <li>Prediction Testing</li>
+                    <li>Report Generation</li>
+                    <li>Visualization & Charts</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

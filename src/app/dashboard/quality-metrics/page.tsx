@@ -49,16 +49,16 @@ interface Metrics {
 const METRIC_LABELS: Record<keyof Omit<Metrics, 'Statistical_Summaries'>, string> = {
   Missing_Values: 'Missing Values',
   Duplicate_Records: 'Duplicate Records',
-  Invalid_Data: 'Invalid Data',
+  // Invalid_Data: 'Invalid Data',
   Outlier_Count: 'Outlier Count',
   Inconsistent_Formats: 'Inconsistent Formats',
   Cardinality_Uniqueness: 'Cardinality/Uniqueness',
-  Class_Imbalance: 'Class Imbalance',
+  // Class_Imbalance: 'Class Imbalance',
   Data_Type_Mismatch: 'Data Type Mismatch',
-  Feature_Correlation: 'Feature Correlation',
-  Low_Variance_Features: 'Low Variance Features',
-  Mean_Median_Drift: 'Mean-Median Drift',
-  Range_Violations: 'Range Violations',
+  // Feature_Correlation: 'Feature Correlation',
+  // Low_Variance_Features: 'Low Variance Features',
+  // Mean_Median_Drift: 'Mean-Median Drift',
+  // Range_Violations: 'Range Violations',
 };
 
 // Function to log chat conversation to n8n webhook
@@ -224,7 +224,7 @@ export default function QualityMetrics() {
     }
   };
 
-  // Mistral API call for a single metric
+  // Groq API call for a single metric
   const getSingleMetricInsight = async (
     metricName: string,
     metricScore: string,
@@ -232,24 +232,23 @@ export default function QualityMetrics() {
     shapeText: string
   ): Promise<string> => {
     const prompt = `You are an expert data scientist. For the following data quality metric, provide:\n- A short AI opinion on the metric's value\n- How to improve or preprocess if needed\nFormat your answer as:\nMetric Name: ${metricName}\nMetric Score: ${metricScore}\nAI Opinion: ...\nHow to improve or preprocess: ...\n\nStatistical Summaries:\n${statsText}\n\nDataset Shape: ${shapeText}`;
-    const mistralApiKey = process.env.NEXT_PUBLIC_MISTRAL_API_KEY;
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    const GROQ_API_KEY = process.env.NEXT_PUBLIC_GROQ_API_KEY;
+    const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+    const response = await fetch(GROQ_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        'Authorization': `Bearer ${mistralApiKey}`,
+          'Authorization': `Bearer ${GROQ_API_KEY}`,
         },
         body: JSON.stringify({
-        model: 'mistral-small-latest',
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
         temperature: 0.3,
-        top_p: 0.9,
-        max_tokens: 600,
-        stream: false,
+        max_tokens: 300,
+        top_p: 0.8,
         messages: [
           { role: 'system', content: 'You are an expert data scientist. Provide clear, actionable, and concise insights.' },
           { role: 'user', content: prompt }
-        ],
-        response_format: { type: 'text' }
+        ]
       })
     });
       if (!response.ok) {
@@ -413,7 +412,7 @@ export default function QualityMetrics() {
                           <th className="px-4 py-3 text-left font-semibold text-gray-900 text-sm">Metric Name</th>
                           <th className="px-4 py-3 text-left font-semibold text-gray-900 text-sm">Count</th>
                           <th className="px-4 py-3 text-left font-semibold text-gray-900 text-sm">Total</th>
-                          <th className="px-4 py-3 text-left font-semibold text-gray-900 text-sm">Percentage</th>
+                          {/* <th className="px-4 py-3 text-left font-semibold text-gray-900 text-sm">Percentage</th> */}
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -421,7 +420,7 @@ export default function QualityMetrics() {
                           const detail = metrics[key];
                           let countCell = '';
                           let totalCell = '';
-                          let pctCell = '';
+                          // let pctCell = '';
                           
                           if (key === 'Class_Imbalance') {
                             if (detail.distribution) {
@@ -432,11 +431,11 @@ export default function QualityMetrics() {
                               }
                             }
                             totalCell = '';
-                            pctCell = detail.imbalance_score !== undefined ? detail.imbalance_score.toFixed(4) : 'N/A';
+                            // pctCell = detail.imbalance_score !== undefined ? detail.imbalance_score.toFixed(4) : 'N/A';
                           } else {
                             countCell = detail.count !== undefined ? String(detail.count) : 'N/A';
                             totalCell = detail.total !== undefined ? String(detail.total) : 'N/A';
-                            pctCell = detail.pct !== undefined ? detail.pct.toFixed(2) + '%' : 'N/A';
+                            // pctCell = detail.pct !== undefined ? detail.pct.toFixed(2) + '%' : 'N/A';
                           }
                                         
                                         return (
@@ -455,7 +454,7 @@ export default function QualityMetrics() {
                                 )}
                                             </td>
                               <td className="px-4 py-3 text-gray-900 text-sm">{totalCell}</td>
-                              <td className="px-4 py-3 text-gray-900 text-sm">{pctCell}</td>
+                              {/* <td className="px-4 py-3 text-gray-900 text-sm">{pctCell}</td> */}
                                           </tr>
                                         );
                                       })}
