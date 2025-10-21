@@ -539,7 +539,7 @@ AI analysis files are created when you explicitly save them from the Model Train
       console.error('Error processing message:', error);
       const errorMessage: Message = {
         sender: 'bot',
-        text: 'Sorry, there was an error processing your request. Please try again.',
+        text: 'Sorry!, there was an error processing your request. Please try again.',
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
