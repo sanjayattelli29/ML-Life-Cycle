@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+export { viewport } from './viewport';
 import AuthProvider from "@/components/AuthProvider";
 import Script from "next/script";
 import { Toaster } from "@/components/ui/toaster";
@@ -111,11 +112,6 @@ export const metadata: Metadata = {
   // App-specific metadata
   applicationName: "Smart Data Analyser",
   referrer: "origin-when-cross-origin",
-  colorScheme: "dark light",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#000000" }
-  ],
   
   // Apple-specific
   appleWebApp: {
