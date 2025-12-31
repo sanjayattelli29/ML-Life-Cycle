@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       userId: string;
       datasetId?: string;
     }
-    
+
     // Build query
     const query: MetricsQuery = { userId };
     if (datasetId) {
@@ -44,22 +44,22 @@ export async function GET(req: NextRequest) {
       .toArray();
 
     // If datasetId is provided, also fetch the dataset details
-    const datasetDetails = null;
+    let datasetDetails = null;
     if (datasetId) {
       datasetDetails = await db.collection('datasets')
         .findOne({ _id: datasetId, userId });
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       history,
       datasetDetails
     });
   } catch (error) {
     console.error('Error fetching metrics history:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Failed to fetch metrics history' 
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to fetch metrics history'
     }, { status: 500 });
   }
 }
