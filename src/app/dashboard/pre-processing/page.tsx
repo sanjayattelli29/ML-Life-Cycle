@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 import { PreprocessingContext } from './context/PreprocessingContext';
-import { 
-  CheckCircleIcon, 
-  CogIcon, 
-  ArrowDownTrayIcon, 
-  PlayIcon, 
+import { createPortal } from 'react-dom';
+import { Info, Calculator } from 'lucide-react';
+import {
+  CheckCircleIcon,
+  CogIcon,
+  ArrowDownTrayIcon,
+  PlayIcon,
   ChartBarIcon,
   DocumentMagnifyingGlassIcon,
   ExclamationTriangleIcon,
@@ -33,18 +35,18 @@ interface Dataset {
 const FLASK_API_URL = 'http://127.0.0.1:1290/preprocess';
 
 const flaskPreprocessingOptions = [
-  { 
-    id: 'missing_values', 
-    title: 'Missing Values', 
+  {
+    id: 'missing_values',
+    title: 'Missing Values',
     description: 'Handle missing data using MICE (Multiple Imputation by Chained Equations)',
     icon: '🔍',
     color: 'bg-blue-500',
     lightColor: 'bg-blue-50',
     textColor: 'text-blue-700'
   },
-  { 
-    id: 'duplicates', 
-    title: 'Duplicate Records', 
+  {
+    id: 'duplicates',
+    title: 'Duplicate Records',
     description: 'Remove duplicate records using bloom filter approach',
     icon: '🔄',
     color: 'bg-green-500',
@@ -60,27 +62,27 @@ const flaskPreprocessingOptions = [
   //   lightColor: 'bg-yellow-50',
   //   textColor: 'text-yellow-700'
   // },
-  { 
-    id: 'outliers', 
-    title: 'Outliers', 
+  {
+    id: 'outliers',
+    title: 'Outliers',
     description: 'Handle outliers using Isolation Forest',
     icon: '📊',
     color: 'bg-red-500',
     lightColor: 'bg-red-50',
     textColor: 'text-red-700'
   },
-  { 
-    id: 'inconsistent_formats', 
-    title: 'Inconsistent Formats', 
+  {
+    id: 'inconsistent_formats',
+    title: 'Inconsistent Formats',
     description: 'Standardize formats using regex validation',
     icon: '📝',
     color: 'bg-purple-500',
     lightColor: 'bg-purple-50',
     textColor: 'text-purple-700'
   },
-  { 
-    id: 'cardinality', 
-    title: 'Cardinality/Uniqueness', 
+  {
+    id: 'cardinality',
+    title: 'Cardinality/Uniqueness',
     description: 'Manage high cardinality using probabilistic counting',
     icon: '🎯',
     color: 'bg-indigo-500',
@@ -96,9 +98,9 @@ const flaskPreprocessingOptions = [
   //   lightColor: 'bg-pink-50',
   //   textColor: 'text-pink-700'
   // },
-  { 
-    id: 'data_type_mismatch', 
-    title: 'Data Type Mismatch', 
+  {
+    id: 'data_type_mismatch',
+    title: 'Data Type Mismatch',
     description: 'Fix data types using schema enforcement',
     icon: '🔧',
     color: 'bg-orange-500',
@@ -165,6 +167,148 @@ type InfoType = {
   data_types?: Record<string, string>;
 };
 
+const PREPROCESSING_DETAILS: Record<string, any> = {
+  missing_values: {
+    title: "Missing Values Handling",
+    description: "Detects missing data and automatically imputes or removes it based on thresholds.",
+    formulas: [
+      "Missing% > 50% → Drop Column",
+      "Numeric Imputation: MICE (IterativeImputer)",
+      "Categorical Imputation: Mode (Most Frequent)"
+    ],
+    codeSnippet: `missing_pct = df[col].isnull().mean()
+if missing_pct > 0.5:
+    df.drop(col, axis=1)
+else:
+    # MICE for numeric, Mode for categorical
+    imputer = IterativeImputer(max_iter=10)
+    df[col].fillna(df[col].mode()[0])`,
+    notes: ["Threshold: 50%", "MICE Regression Imputation", "Mode for Categorical"]
+  },
+  duplicates: {
+    title: "Duplicate Records",
+    description: "Identifies and removes rows that are exact duplicates of others.",
+    formulas: [
+      "Duplicate = hash(row_i) == hash(row_j)",
+      "Action: Keep First, Remove Others"
+    ],
+    codeSnippet: `row_hashes = df.apply(lambda r: 
+    hashlib.md5(str(r.values).encode()).hexdigest(), axis=1)
+duplicates = row_hashes.duplicated()
+df = df[~duplicates]`,
+    notes: ["MD5 Row Hashing", "Exact Match Removal", "Memory Efficient"]
+  },
+  outliers: {
+    title: "Outlier Treatment",
+    description: "Detects anomalies using Isolation Forest and caps them with median values.",
+    formulas: [
+      "Method: Isolation Forest (contamination=0.1)",
+      "Score -1 → Outlier, 1 → Normal",
+      "Action: Replace with Median"
+    ],
+    codeSnippet: `iso = IsolationForest(contamination=0.1)
+pred = iso.fit_predict(numeric_data)
+outlier_mask = pred == -1
+df.loc[outlier_mask, col] = df[col].median()`,
+    notes: ["Isolation Forest ML", "Replaced with Median", "Robust to Skew"]
+  },
+  inconsistent_formats: {
+    title: "Inconsistent Formats",
+    description: "Standardizes text data by fixing common formatting issues.",
+    formulas: [
+      "Heuristics: Regex for Emails, Phones",
+      "Normalization: Trim, Lowercase, Symbol Removal"
+    ],
+    codeSnippet: `if str.contains('@'): # Email
+    val = val.lower().strip()
+elif regex(phone_pattern): # Phone
+    val = re.sub(r'[\\+\\-\\(\\)\\s]', '', val)
+else:
+    val = val.strip().replace('  ', ' ')`,
+    notes: ["Email Normalization", "Phone Cleanup", "Whitespace Trimming"]
+  },
+  cardinality: {
+    title: "Cardinality / Uniqueness",
+    description: "Handles high cardinality in categorical columns by grouping rare values.",
+    formulas: [
+      "Threshold: > 100 Unique Values",
+      "Action: Keep Top 100, Group rest as 'Other'"
+    ],
+    codeSnippet: `if df[col].nunique() > 100:
+    top_100 = df[col].value_counts().head(100).index
+    df[col] = df[col].apply(lambda x: 
+        x if x in top_100 else 'Other')`,
+    notes: ["Threshold: 100", "Top-K Strategy", "Rare Grouping"]
+  },
+  data_type_mismatch: {
+    title: "Data Type Mismatch",
+    description: "Infers and corrects column data types based on content analysis.",
+    formulas: [
+      "Convertible Ratio > 80% → Change Type",
+      "Checks: Numeric, Datetime"
+    ],
+    codeSnippet: `numeric_converted = pd.to_numeric(col, errors='coerce')
+ratio = numeric_converted.notna().mean()
+if ratio > 0.8:
+    df[col] = numeric_converted
+# Similar logic for Datetime`,
+    notes: ["Soft Conversion", "80% Threshold", "Inference Logic"]
+  }
+};
+
+function HoverMetricCard({ detail }: { detail: any }) {
+  if (!detail) return null;
+  return (
+    <div className="w-[450px] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden text-left font-sans">
+      <div className="bg-gradient-to-r from-gray-50 to-white px-5 py-4 border-b border-gray-100 flex items-start gap-4">
+        <div className="bg-blue-600 text-white rounded-lg p-2 shadow-md shrink-0">
+          <Info className="h-5 w-5" />
+        </div>
+        <div>
+          <h4 className="font-bold text-gray-900 text-lg leading-tight">{detail.title}</h4>
+          <p className="text-xs text-gray-500 mt-1 leading-snug">{detail.description}</p>
+        </div>
+      </div>
+      <div className="p-5 space-y-4 bg-white">
+        {/* Formula */}
+        <div className="bg-blue-50/50 rounded-lg p-3 border border-blue-100">
+          <div className="text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-2 flex items-center">
+            <Calculator className="h-3 w-3 mr-1" /> Formula & Logic
+          </div>
+          {detail.formulas?.map((f: string, i: number) => (
+            <div key={i} className="text-xs text-blue-900 font-medium mb-1 last:mb-0 pl-2 border-l-2 border-blue-400">
+              {f}
+            </div>
+          ))}
+        </div>
+
+        {/* Code */}
+        <div className="bg-gray-900 rounded-lg p-3 border border-gray-800 shadow-inner group relative">
+          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center">
+            <div className="w-2 h-2 rounded-full bg-green-500 mr-2 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></div> Backend Code
+          </div>
+          <div className="overflow-x-auto custom-scrollbar">
+            <pre className="text-[10px] leading-relaxed text-gray-300 font-mono whitespace-pre">
+              <code>{detail.codeSnippet}</code>
+            </pre>
+          </div>
+        </div>
+
+        {/* Notes */}
+        {detail.notes?.length > 0 && (
+          <div className="flex flex-wrap gap-2 pt-1">
+            {detail.notes.map((note: string, i: number) => (
+              <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-[10px] font-semibold border border-gray-200">
+                {note}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function PreProcessing() {
   const { data: session } = useSession();
   const [datasets, setDatasets] = useState<Dataset[]>([]);
@@ -181,7 +325,7 @@ export default function PreProcessing() {
   const [currentSummaryIndex, setCurrentSummaryIndex] = useState(0);
   const [showPreprocessedPreview, setShowPreprocessedPreview] = useState(false);
   const [preprocessedDataForPreview, setPreprocessedDataForPreview] = useState<{
-    columns: Array<{name: string; type: string}>;
+    columns: Array<{ name: string; type: string }>;
     data: Array<Record<string, unknown>>;
   } | null>(null);
   const [aiInsights, setAiInsights] = useState<Array<{
@@ -196,6 +340,8 @@ export default function PreProcessing() {
   const [aiProgress, setAiProgress] = useState(0);
   const [isUploadingToTransformation, setIsUploadingToTransformation] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
+  const [hoveredMetric, setHoveredMetric] = useState<string | null>(null);
+  const [hoverPos, setHoverPos] = useState({ top: 0, left: 0 });
 
   React.useEffect(() => {
     const fetchDatasets = async () => {
@@ -340,7 +486,7 @@ export default function PreProcessing() {
     const columns = headers.map(header => {
       const sampleValues = dataRows.slice(0, 10).map(row => row[header]);
       let type = 'string';
-      
+
       // Check if all non-empty values are numbers
       const nonEmptyValues = sampleValues.filter(val => val !== '' && val !== null && val !== undefined);
       if (nonEmptyValues.length > 0) {
@@ -349,7 +495,7 @@ export default function PreProcessing() {
           type = 'number';
         }
       }
-      
+
       return { name: header, type };
     });
 
@@ -393,10 +539,10 @@ export default function PreProcessing() {
   // Download AI insights report
   const downloadAIInsights = () => {
     if (!aiInsights.length) return;
-    const reportContent = aiInsights.map((insight, index) => 
+    const reportContent = aiInsights.map((insight, index) =>
       `${index + 1}. ${insight.factorName}\n\nBefore Score: ${insight.beforeScore}\nAfter Score: ${insight.afterScore}\n\nAI Opinion:\n${insight.aiOpinion}\n\nSuggestion:\n${insight.suggestion}\n\n${'='.repeat(80)}\n`
     ).join('\n');
-    
+
     const blob = new Blob([reportContent], { type: 'text/plain' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -448,13 +594,13 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
     // Try Mistral API first
     try {
       const mistralApiKey = process.env.NEXT_PUBLIC_MISTRAL_API_KEY;
-      
+
       if (!mistralApiKey) {
         throw new Error('Mistral API key not found');
       }
 
       console.log('Making Mistral API request for factor:', factorName);
-      
+
       const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -482,28 +628,28 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
 
       const data = await response.json();
       console.log('Mistral API response:', data);
-      
+
       const content = stripMarkdown(data.choices?.[0]?.message?.content || '');
-      
+
       if (!content) {
         throw new Error('No content received from Mistral API');
       }
-      
+
       return parseAIResponse(content, factorName);
-      
+
     } catch (mistralError) {
       console.error('Mistral API failed, trying Groq fallback:', mistralError);
-      
+
       // Fallback to Groq API
       try {
         const groqApiKey = process.env.NEXT_PUBLIC_GROQ_API_KEY;
-        
+
         if (!groqApiKey) {
           throw new Error('Both Mistral and Groq API keys not found');
         }
 
         console.log('Making Groq API request for factor:', factorName);
-        
+
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -511,7 +657,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
             'Authorization': `Bearer ${groqApiKey}`,
           },
           body: JSON.stringify({
-        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+            model: 'meta-llama/llama-4-scout-17b-16e-instruct',
             temperature: 0.3,
             max_tokens: 600,
             messages: [
@@ -531,15 +677,15 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
 
         const data = await response.json();
         console.log('Groq API response:', data);
-        
+
         const content = stripMarkdown(data.choices?.[0]?.message?.content || '');
-        
+
         if (!content) {
           throw new Error('No content received from Groq API');
         }
-        
+
         return parseAIResponse(content, factorName);
-        
+
       } catch (groqError) {
         console.error('Both Mistral and Groq APIs failed:', groqError);
         throw new Error(`AI APIs failed: ${mistralError.message} | ${groqError.message}`);
@@ -595,13 +741,13 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
       toast.error('No preprocessing results available');
       return;
     }
-    
+
     const selectedFactors = getSelectedFactorKeys();
     if (selectedFactors.length === 0) {
       toast.error('No preprocessing factors were selected');
       return;
     }
-    
+
     setLoadingAI(true);
     setAiError('');
     setAiInsights([]);
@@ -628,7 +774,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
 
         if (factorOption && factorStats) {
           setAiProgress(i + 1);
-          
+
           try {
             const insight = await getSingleFactorInsight(
               factorOption.title,
@@ -636,7 +782,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
               factorStats,
               factorOption.description
             );
-            
+
             insights.push(insight);
             console.log(`Successfully generated insight for ${factorOption.title}:`, insight);
           } catch (factorError) {
@@ -653,7 +799,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
         } else {
           console.warn(`Missing data for factor: ${factorKey}`, { factorOption, factorStats });
         }
-        
+
         // Small delay to avoid rate limiting
         if (i < selectedFactors.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 1000));
@@ -686,19 +832,19 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
     try {
       // Get selected processing steps
       const selectedFactors = getSelectedFactorKeys();
-      
+
       console.log('About to upload dataset to R2:', {
         csvDataLength: processedCSV.length,
         datasetName: currentDataset.name,
         selectedFactors,
         hasReport: !!preprocessingReport
       });
-      
+
       // Ensure CSV data is properly formatted (remove any BOM or special characters)
       const cleanCsvData = processedCSV.replace(/^\ufeff/, ''); // Remove BOM if present
-      
+
       setUploadStatus('Uploading to R2 cloud storage...');
-      
+
       // Upload directly to R2 storage
       const uploadPromise = fetch('/api/r2-datasets/upload', {
         method: 'POST',
@@ -715,7 +861,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
       });
 
       // Add a timeout to the entire upload operation
-      const timeoutPromise = new Promise((_, reject) => 
+      const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Upload operation timed out after 2 minutes')), 120000)
       );
 
@@ -727,13 +873,13 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
         // Try to get detailed error information
         let errorMessage = 'Failed to upload dataset to R2 storage';
         let errorDetails = '';
-        
+
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
           errorDetails = errorData.details || '';
           console.error('Upload API error response:', errorData);
-          
+
           // Provide more specific error messages based on common issues
           if (errorMessage.includes('MongoDB') && errorMessage.includes('timeout')) {
             errorMessage = 'Database connection timeout. This can happen with large datasets. Please try again.';
@@ -768,15 +914,15 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
             errorMessage = `Upload failed (Status: ${response.status}). Please try again.`;
           }
         }
-        
+
         throw new Error(errorMessage + (errorDetails ? ` (${errorDetails})` : ''));
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         setUploadStatus('Upload completed successfully!');
-        
+
         if (result.database_save_failed) {
           // Partial success - file uploaded but database save failed
           toast.success('Dataset uploaded to cloud storage successfully!', {
@@ -791,7 +937,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
           // Full success
           toast.success('Dataset uploaded to cloud storage successfully!');
         }
-        
+
         // Navigate to Data Transformation page regardless
         setTimeout(() => {
           window.location.href = '/dashboard/data-transformation';
@@ -982,7 +1128,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
   // Render summary tables UI
   const renderSummaryTables = () => {
     if (!preprocessingReport) return null;
-    
+
     if (showSlider) {
       return (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -995,7 +1141,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
               <ChevronLeftIcon className="w-4 h-4 mr-1" />
               Previous
             </button>
-            
+
             <div className="text-center">
               <h3 className="font-semibold text-lg text-gray-800 mb-2">
                 {summaryTables[currentSummaryIndex]?.title}
@@ -1004,14 +1150,13 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                 {summaryTables.map((_, index) => (
                   <div
                     key={index}
-                    className={`w-2 h-2 rounded-full ${
-                      index === currentSummaryIndex ? 'bg-blue-500' : 'bg-gray-300'
-                    }`}
+                    className={`w-2 h-2 rounded-full ${index === currentSummaryIndex ? 'bg-blue-500' : 'bg-gray-300'
+                      }`}
                   />
                 ))}
               </div>
             </div>
-            
+
             <button
               className="flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-colors"
               onClick={() => setCurrentSummaryIndex(i => Math.min(summaryTables.length - 1, i + 1))}
@@ -1021,7 +1166,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
               <ChevronRightIcon className="w-4 h-4 ml-1" />
             </button>
           </div>
-          
+
           <div className="overflow-hidden rounded-lg border border-gray-200">
             <table className="min-w-full divide-y divide-gray-200">
               <tbody className="bg-white divide-y divide-gray-200">
@@ -1038,7 +1183,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
               </tbody>
             </table>
           </div>
-          
+
           <div className="mt-3 text-center text-sm text-gray-500">
             {currentSummaryIndex + 1} of {summaryTables.length} summaries
           </div>
@@ -1088,7 +1233,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
             <h2 className="text-lg font-semibold text-gray-800">Error</h2>
           </div>
           <p className="text-gray-600 mb-4">{error}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="w-full bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition-colors"
           >
@@ -1101,7 +1246,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
 
   const contextValue = {
     dataset: currentDataset,
-    setProcessedData: () => {},
+    setProcessedData: () => { },
     setProcessingStatus,
     setIsProcessing
   };
@@ -1136,23 +1281,65 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                 <p className="text-gray-600 text-sm">Choose your dataset to begin preprocessing</p>
               </div>
             </div>
-            
-            <select
-              className="w-full p-3 border border-gray-300 rounded-md text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
-              onChange={handleDatasetChange}
-              value={currentDataset?._id || ''}
-            >
-              <option value="" className="text-gray-500">Select a dataset to get started</option>
-              {datasets.map((dataset) => (
-                <option key={dataset._id} value={dataset._id} className="text-gray-700">
-                  {dataset.name} ({dataset.data.length} rows, {dataset.columns.length} columns)
+
+            <div className="relative w-full">
+              <select
+                onChange={handleDatasetChange}
+                value={currentDataset?._id || ""}
+                className="
+      w-full
+      appearance-none
+      bg-white
+      px-4 py-3
+      pr-10
+      border border-gray-200
+      rounded-lg
+      text-gray-800
+      shadow-sm
+      transition-all duration-200
+
+      hover:border-gray-300
+      focus:outline-none
+      focus:border-blue-500
+      focus:ring-4
+      focus:ring-blue-100
+
+      disabled:bg-gray-100
+      disabled:text-gray-400
+    "
+              >
+                <option value="" className="text-gray-400">
+                  Select a dataset to get started
                 </option>
-              ))}
-            </select>
+
+                {datasets.map((dataset) => (
+                  <option
+                    key={dataset._id}
+                    value={dataset._id}
+                    className="text-gray-800"
+                  >
+                    {dataset.name} ({dataset.data.length} rows, {dataset.columns.length} columns)
+                  </option>
+                ))}
+              </select>
+
+              {/* Custom Arrow */}
+              <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
+                ▼
+              </div>
+            </div>
+
           </div>
-          {/* Preprocessing Options */}
           {currentDataset && (
             <>
+              {/* Link to Guide */}
+              <div className="flex justify-end mb-4">
+                <a href="/dashboard/preprocessing-guide" className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
+                  <Info className="w-4 h-4 mr-1" />
+                  Understand Preprocessing Logic
+                </a>
+              </div>
+
               <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
@@ -1164,7 +1351,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                       <p className="text-gray-600 text-sm">Select preprocessing techniques to optimize your data</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center">
                     <input
                       type="checkbox"
@@ -1178,18 +1365,17 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                     </label>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {flaskPreprocessingOptions.map((option) => (
                     <div
                       key={option.id}
-                      className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                        allFactors 
-                          ? 'bg-blue-50 border-blue-200 opacity-75' 
-                          : selectedOptions.includes(option.id)
-                            ? 'bg-blue-50 border-blue-300'
-                            : 'bg-white border-gray-200 hover:border-gray-300'
-                      }`}
+                      className={`border rounded-lg p-4 cursor-pointer transition-colors ${allFactors
+                        ? 'bg-blue-50 border-blue-200 opacity-75'
+                        : selectedOptions.includes(option.id)
+                          ? 'bg-blue-50 border-blue-300'
+                          : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
                       onClick={() => !allFactors && handleOptionToggle(option.id)}
                     >
                       <div className="flex items-start space-x-3">
@@ -1197,13 +1383,43 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                           type="checkbox"
                           checked={allFactors || selectedOptions.includes(option.id)}
                           disabled={allFactors}
-                          onChange={() => {}}
+                          onChange={() => { }}
                           className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                         />
                         <div className="flex-1">
                           <div className="flex items-center mb-2">
                             <span className="text-lg mr-2">{option.icon}</span>
-                            <h3 className="font-medium text-gray-900">{option.title}</h3>
+                            <h3 className="font-medium text-gray-900 mr-2">{option.title}</h3>
+                            {PREPROCESSING_DETAILS[option.id] && (
+                              <div className="relative group/info" onClick={(e) => e.stopPropagation()}>
+                                <Info
+                                  className="h-4 w-4 text-gray-400 hover:text-blue-600 cursor-help transition-colors"
+                                  onMouseEnter={(e) => {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    setHoverPos({
+                                      top: rect.top + window.scrollY + (rect.height / 2),
+                                      left: rect.right + window.scrollX + 10
+                                    });
+                                    setHoveredMetric(option.id);
+                                  }}
+                                  onMouseLeave={() => setHoveredMetric(null)}
+                                />
+                                {hoveredMetric === option.id && typeof document !== 'undefined' && createPortal(
+                                  <div
+                                    className="absolute z-[9999] animate-in fade-in zoom-in-95 duration-200 origin-left pointer-events-none"
+                                    style={{
+                                      top: hoverPos.top,
+                                      left: hoverPos.left,
+                                      transform: 'translateY(-50%)'
+                                    }}
+                                  >
+                                    <div className="absolute left-0 top-1/2 transform -translate-x-full -translate-y-1/2 border-[6px] border-transparent border-r-white drop-shadow-sm"></div>
+                                    <HoverMetricCard detail={PREPROCESSING_DETAILS[option.id]} />
+                                  </div>,
+                                  document.body
+                                )}
+                              </div>
+                            )}
                           </div>
                           <p className="text-sm text-gray-600 leading-relaxed">
                             {option.description}
@@ -1213,7 +1429,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                     </div>
                   ))}
                 </div>
-                
+
                 {/* Status and Action Section */}
                 <div className="space-y-4">
                   {processingStatus && (
@@ -1224,18 +1440,18 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="flex items-center justify-between bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center text-gray-600">
                       <SparklesIcon className="w-4 h-4 mr-2" />
                       <span className="text-sm">
-                        {allFactors 
-                          ? 'All 12 factors selected' 
+                        {allFactors
+                          ? 'All 12 factors selected'
                           : `${selectedOptions.length} factor${selectedOptions.length !== 1 ? 's' : ''} selected`
                         }
                       </span>
                     </div>
-                    
+
                     <div className="flex gap-3">
                       {processedCSV && (
                         <>
@@ -1255,7 +1471,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                           </button>
                         </>
                       )}
-                      
+
                       {preprocessingReport && (
                         <button
                           onClick={downloadPreprocessingReport}
@@ -1265,15 +1481,14 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                           Download Report
                         </button>
                       )}
-                      
+
                       <button
                         onClick={handlePreprocess}
                         disabled={(!allFactors && selectedOptions.length === 0) || isProcessing}
-                        className={`flex items-center px-6 py-2 font-medium rounded-md transition-colors ${
-                          (!allFactors && selectedOptions.length === 0) || isProcessing
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
-                        }`}
+                        className={`flex items-center px-6 py-2 font-medium rounded-md transition-colors ${(!allFactors && selectedOptions.length === 0) || isProcessing
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-blue-600 text-white hover:bg-blue-700'
+                          }`}
                       >
                         {isProcessing ? (
                           <>
@@ -1354,7 +1569,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                       <span className="text-sm font-medium text-green-700">Processing Complete!</span>
                     </div>
                   </div>
-                  
+
                   {renderSummaryTables()}
                 </div>
               )}
@@ -1429,7 +1644,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                               #{index + 1}
                             </div>
                           </div>
-                          
+
                           <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
@@ -1441,12 +1656,12 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                                 <p className="text-sm text-green-800 font-semibold mt-1">{insight.afterScore}</p>
                               </div>
                             </div>
-                            
+
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                               <p className="text-xs font-medium text-blue-600 uppercase tracking-wide mb-2">AI Opinion</p>
                               <p className="text-sm text-blue-800 leading-relaxed">{insight.aiOpinion}</p>
                             </div>
-                            
+
                             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                               <p className="text-xs font-medium text-yellow-600 uppercase tracking-wide mb-2">Suggestion</p>
                               <p className="text-sm text-yellow-800 leading-relaxed">{insight.suggestion}</p>
@@ -1494,7 +1709,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="overflow-x-auto rounded-lg border border-gray-200">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -1523,8 +1738,8 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                               key={column.name}
                               className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-100 last:border-r-0"
                             >
-                              <div 
-                                className="max-w-xs truncate" 
+                              <div
+                                className="max-w-xs truncate"
                                 title={row[column.name]?.toString() || 'N/A'}
                               >
                                 {row[column.name]?.toString() || (
@@ -1547,7 +1762,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                       Showing {(currentPage * 10) + 1} to {Math.min((currentPage * 10) + 10, currentDataset.data.length)} of {currentDataset.data.length} entries
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
@@ -1557,17 +1772,16 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                       <ChevronLeftIcon className="w-4 h-4 mr-1" />
                       Previous
                     </button>
-                    
+
                     <div className="flex items-center space-x-1">
                       {Array.from({ length: Math.ceil(currentDataset.data.length / 10) }, (_, i) => (
                         <button
                           key={i}
                           onClick={() => setCurrentPage(i)}
-                          className={`w-8 h-8 text-sm font-medium rounded-md transition-colors ${
-                            currentPage === i
-                              ? 'bg-blue-600 text-white'
-                              : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                          }`}
+                          className={`w-8 h-8 text-sm font-medium rounded-md transition-colors ${currentPage === i
+                            ? 'bg-blue-600 text-white'
+                            : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                            }`}
                         >
                           {i + 1}
                         </button>
@@ -1576,7 +1790,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                         Math.min(Math.ceil(currentDataset.data.length / 10), currentPage + 3)
                       )}
                     </div>
-                    
+
                     <button
                       onClick={() => setCurrentPage(Math.min(Math.ceil(currentDataset.data.length / 10) - 1, currentPage + 1))}
                       disabled={currentPage >= Math.ceil(currentDataset.data.length / 10) - 1}
@@ -1624,7 +1838,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="overflow-x-auto rounded-lg border border-gray-200">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-green-50">
@@ -1653,8 +1867,8 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                                 key={column.name}
                                 className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-100 last:border-r-0"
                               >
-                                <div 
-                                  className="max-w-xs truncate" 
+                                <div
+                                  className="max-w-xs truncate"
                                   title={row[column.name]?.toString() || 'N/A'}
                                 >
                                   {row[column.name]?.toString() || (
@@ -1677,7 +1891,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                         Showing {(currentPage * 10) + 1} to {Math.min((currentPage * 10) + 10, preprocessedDataForPreview.data.length)} of {preprocessedDataForPreview.data.length} processed entries
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
@@ -1687,17 +1901,16 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                         <ChevronLeftIcon className="w-4 h-4 mr-1" />
                         Previous
                       </button>
-                      
+
                       <div className="flex items-center space-x-1">
                         {Array.from({ length: Math.ceil(preprocessedDataForPreview.data.length / 10) }, (_, i) => (
                           <button
                             key={i}
                             onClick={() => setCurrentPage(i)}
-                            className={`w-8 h-8 text-sm font-medium rounded-md transition-colors ${
-                              currentPage === i
-                                ? 'bg-green-600 text-white'
-                                : 'text-green-700 bg-white border border-green-300 hover:bg-green-50'
-                            }`}
+                            className={`w-8 h-8 text-sm font-medium rounded-md transition-colors ${currentPage === i
+                              ? 'bg-green-600 text-white'
+                              : 'text-green-700 bg-white border border-green-300 hover:bg-green-50'
+                              }`}
                           >
                             {i + 1}
                           </button>
@@ -1706,7 +1919,7 @@ SUGGESTION: [actionable suggestions for future preprocessing]`;
                           Math.min(Math.ceil(preprocessedDataForPreview.data.length / 10), currentPage + 3)
                         )}
                       </div>
-                      
+
                       <button
                         onClick={() => setCurrentPage(Math.min(Math.ceil(preprocessedDataForPreview.data.length / 10) - 1, currentPage + 1))}
                         disabled={currentPage >= Math.ceil(preprocessedDataForPreview.data.length / 10) - 1}

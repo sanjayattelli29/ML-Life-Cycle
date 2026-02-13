@@ -455,6 +455,13 @@ export default function Header() {
                         >
                           Metrics Guide
                         </Link>
+                         <Link
+                          href="/dashboard/preprocessing-guide"
+                          className="-mx-3 block rounded-xl px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50/80 transition-all duration-200"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Pre-Processing
+                        </Link>
                         <Link
                           href="/dashboard/whiteboard"
                           className="-mx-3 block rounded-xl px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50/80 transition-all duration-200"

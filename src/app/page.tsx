@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Play, Sparkles, Zap, Shield, TrendingUp, Users, Database, BarChart3, Brain, CheckCircle, ArrowRight, ArrowDown, Menu, X, Download } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Play, Sparkles, Zap, Shield, TrendingUp, Users, Database, BarChart3, Brain, CheckCircle, ArrowRight, ArrowDown, Menu, X, Download, Code, Cpu, Network } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import SimpleAIChatbot from '@/components/SimpleAIChatbot';
+import ServerAnimation from '@/components/ServerAnimation';
 
 const EnhancedLanding = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -47,24 +49,34 @@ const EnhancedLanding = () => {
     return Math.round(basePrice * mb * (1 - discount));
   };
 
+  const scrollToSection = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+    setIsMenuOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-blue-100">
       {/* Header */}
       <header className="fixed top-0 w-full bg-white/90 backdrop-blur-md border-b border-gray-100 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
           <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-3">
+            <Link href="/" className="flex items-center space-x-3" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
                 <BarChart3 className="w-6 h-6 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900 tracking-tight">
                 Smart Data Analyzer
               </span>
-            </div>
+            </Link>
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">Features</a>
-              <a href="#pricing" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">Pricing</a>
-              <a href="#testimonials" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">Reviews</a>
+              <Link href="/" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Home</Link>
+              <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">Features</a>
+              <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">Pricing</a>
+              <a href="#testimonials" onClick={(e) => scrollToSection(e, 'testimonials')} className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">Reviews</a>
               <Link href="/auth/signup">
                 <button className="bg-black text-white px-6 py-2.5 rounded-full font-semibold hover:bg-gray-800 transition-all text-sm shadow-md hover:shadow-lg">
                   Start Free Trial
@@ -85,9 +97,10 @@ const EnhancedLanding = () => {
       {isMenuOpen && (
         <div className="fixed inset-0 bg-white z-40 md:hidden pt-24 px-6">
           <div className="flex flex-col space-y-6">
-            <a href="#features" className="text-2xl font-semibold text-gray-900 border-b border-gray-100 pb-4">Features</a>
-            <a href="#pricing" className="text-2xl font-semibold text-gray-900 border-b border-gray-100 pb-4">Pricing</a>
-            <a href="#testimonials" className="text-2xl font-semibold text-gray-900 border-b border-gray-100 pb-4">Reviews</a>
+            <Link href="/" className="text-2xl font-semibold text-gray-900 border-b border-gray-100 pb-4" onClick={() => setIsMenuOpen(false)}>Home</Link>
+            <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="text-2xl font-semibold text-gray-900 border-b border-gray-100 pb-4">Features</a>
+            <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="text-2xl font-semibold text-gray-900 border-b border-gray-100 pb-4">Pricing</a>
+            <a href="#testimonials" onClick={(e) => scrollToSection(e, 'testimonials')} className="text-2xl font-semibold text-gray-900 border-b border-gray-100 pb-4">Reviews</a>
             <Link href="/auth/signup">
               <button className="w-full bg-blue-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 shadow-xl shadow-blue-200">
                 Start Free Trial
@@ -98,34 +111,103 @@ const EnhancedLanding = () => {
       )}
 
       {/* Hero Section */}
-      <section className="pt-40 pb-20 px-4 sm:px-8 lg:px-12 bg-white relative overflow-hidden">
-        {/* Decorative background element */}
-        <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-blue-50/50 rounded-full blur-3xl -z-10 opacity-60"></div>
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-50/50 rounded-full blur-3xl -z-10 opacity-60"></div>
+      <section className="relative pt-32 pb-20 px-4 sm:px-8 lg:px-12 bg-white overflow-hidden border-b border-gray-100">
+        {/* Sleek Grid Background - NexByte Style (High Visibility) */}
+        <div className="absolute inset-0 -z-10 h-full w-full bg-[linear-gradient(to_right,#cbd5e1_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e1_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-[0.4]"></div>
 
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-100 mb-8 bg-blue-50/30">
+        {/* Soft Mask for Grid */}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-white/50 to-white"></div>
+
+        {/* Blue Gradient - Down Side */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-blue-50/80 pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-[500px] bg-gradient-to-t from-blue-100/50 via-blue-50/20 to-transparent pointer-events-none -z-10 blur-3xl"></div>
+
+        {/* Floating Icons */}
+        <div className="absolute inset-0 max-w-7xl mx-auto pointer-events-none hidden lg:block">
+          {/* Left Side Icons */}
+          <motion.div
+            animate={{ y: [-10, 10, -10], rotate: [0, 5, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-1/4 left-10 w-16 h-16 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 flex items-center justify-center"
+          >
+            <Database className="w-8 h-8 text-blue-500" />
+            <div className="absolute -z-10 inset-0 bg-blue-100/50 rounded-2xl blur-lg transform scale-110"></div>
+          </motion.div>
+
+          <motion.div
+            animate={{ y: [10, -10, 10], rotate: [0, -5, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute bottom-1/3 left-32 w-14 h-14 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 flex items-center justify-center"
+          >
+            <Code className="w-6 h-6 text-indigo-500" />
+            <div className="absolute -z-10 inset-0 bg-indigo-100/50 rounded-2xl blur-lg transform scale-110"></div>
+          </motion.div>
+
+          {/* Right Side Icons */}
+          <motion.div
+            animate={{ y: [-15, 15, -15], rotate: [0, -5, 0] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            className="absolute top-1/3 right-10 w-16 h-16 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 flex items-center justify-center"
+          >
+            <Brain className="w-8 h-8 text-purple-500" />
+            <div className="absolute -z-10 inset-0 bg-purple-100/50 rounded-2xl blur-lg transform scale-110"></div>
+          </motion.div>
+
+          <motion.div
+            animate={{ y: [12, -12, 12], rotate: [0, 5, 0] }}
+            transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+            className="absolute bottom-1/4 right-32 w-14 h-14 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 flex items-center justify-center"
+          >
+            <Network className="w-6 h-6 text-pink-500" />
+            <div className="absolute -z-10 inset-0 bg-pink-100/50 rounded-2xl blur-lg transform scale-110"></div>
+          </motion.div>
+        </div>
+
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gray-200 bg-white/50 backdrop-blur-sm mb-8 shadow-sm hover:border-gray-300 transition-colors cursor-default"
+          >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
             </span>
-            <span className="text-xs font-bold tracking-widest uppercase text-blue-600">Educational ML Platform</span>
-          </div>
+            <span className="text-xs font-bold tracking-wide uppercase text-gray-600">Educational ML Platform 2.0</span>
+          </motion.div>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black text-gray-900 mb-8 leading-tight tracking-tight">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-[1.1] tracking-tight"
+          >
             Master the Complete <br className="hidden sm:block" />
-            <span className="bg-gradient-to-r from-blue-600 to-blue-600 bg-clip-text text-transparent">ML Lifecycle Journey</span>
-          </h1>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900">
+              ML Lifecycle Journey
+            </span>
+          </motion.h1>
 
-          <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed font-light">
-            From data ingestion to model deployment - master every step with hands-on learning and interactive tutorials in a premium environment.
-          </p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed font-normal"
+          >
+            From data ingestion to model deployment. Master every step with hands-on learning and interactive tutorials in a premium, secure environment.
+          </motion.p>
 
-          <div className="flex flex-col sm:flex-row gap-5 justify-center items-center mb-20">
-            <Link href="/auth/signup">
-              <button className="bg-blue-600 text-white px-10 py-4 rounded-full font-bold hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 flex items-center gap-3 text-lg">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+          >
+            <Link href="/auth/signup" className="w-full sm:w-auto">
+              <button className="w-full sm:w-auto bg-blue-600 text-white px-8 py-3.5 rounded-lg font-bold hover:bg-blue-700 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.1),0_4px_12px_rgba(59,130,246,0.3)] hover:shadow-[0_1px_2px_rgba(0,0,0,0.1),0_8px_24px_rgba(59,130,246,0.4)] flex items-center justify-center gap-2 group text-base border border-transparent">
                 Start Learning Journey
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
             </Link>
             <button
@@ -133,129 +215,107 @@ const EnhancedLanding = () => {
                 const section = document.getElementById('ml-server-section');
                 section?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="bg-white text-gray-900 border border-gray-200 px-10 py-4 rounded-full font-bold hover:border-gray-300 hover:bg-gray-50 transition-all flex items-center gap-3 text-lg"
+              className="w-full sm:w-auto bg-white text-gray-700 border border-gray-200 px-8 py-3.5 rounded-lg font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center justify-center gap-2 text-base shadow-sm"
             >
               Get Started with ML Server
-              <ArrowDown className="w-5 h-5" />
+              <ArrowDown className="w-4 h-4 text-gray-400" />
             </button>
-          </div>
+          </motion.div>
 
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm text-gray-500 font-medium border-t border-gray-100 pt-10 max-w-4xl mx-auto">
+          {/* Social Proof / Trust Indicators */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 pt-8 border-t border-gray-100 max-w-4xl mx-auto"
+          >
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-blue-600" />
-              <span>Free for students</span>
+              <div className="h-4 w-px bg-gray-200 hidden sm:block"></div>
+              <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+                <Users className="w-4 h-4 text-green-600" />
+                <span>Collaborative platform</span>
+              </div>
             </div>
             <div className="h-4 w-px bg-gray-200 hidden sm:block"></div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-blue-600" />
+            <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+              <Shield className="w-4 h-4 text-green-600" />
               <span>Interactive learning</span>
             </div>
             <div className="h-4 w-px bg-gray-200 hidden sm:block"></div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-blue-600" />
-              <span>Collaborative platform</span>
+            <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+              <Zap className="w-4 h-4 text-yellow-500" />
+              <span>Real-time Processing</span>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Decorative Line */}
-      <div className="max-w-7xl mx-auto px-4"><div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div></div>
-
       {/* Download ML Server Section */}
-      <section id="ml-server-section" className="py-24 px-4 sm:px-8 lg:px-12">
+      <section id="ml-server-section" className="py-4 px-4 sm:px-8 lg:px-12 bg-gray-50/50">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-gradient-to-br from-gray-50 to-white rounded-3xl p-8 lg:p-16 border border-gray-100 shadow-lg shadow-gray-100/50">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black text-white text-xs font-bold uppercase mb-6">
-                  <Download className="w-3 h-3" />
-                  <span>Desktop App</span>
-                </div>
-                <h3 className="text-4xl font-bold text-gray-900 mb-6 tracking-tight">Get Started with ML Server</h3>
-                <p className="text-gray-600 mb-8 text-lg leading-relaxed">
-                  Download our ML Server application to start your machine learning journey. Run models locally and experience seamless data processing with our optimized powerhouse.
-                </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            {/* Left Column: Content */}
+            <div className="order-2 lg:order-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase mb-6 tracking-wider border border-blue-100">
+                <Download className="w-3 h-3" />
+                <span>Desktop Application</span>
+              </div>
+              <h3 className="text-4xl font-bold text-gray-900 mb-6 tracking-tight leading-tight">
+                Powerful Local <br />
+                <span className="text-blue-600">Machine Learning Server</span>
+              </h3>
+              <p className="text-gray-600 mb-8 text-lg leading-relaxed">
+                Run models locally with zero latency. Our optimized ML Server handles data processing, model training, and inference directly on your machine.
+              </p>
 
-                <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-8 shadow-sm">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <span className="text-gray-800 font-medium">Easy one-click installation</span>
+              <div className="space-y-4 mb-10">
+                {[
+                  { title: "One-click Installation", desc: "Get up and running in seconds on Windows." },
+                  { title: "Local Processing", desc: "No data leaves your machine. 100% private." },
+                  // { title: "Optimized Performance", desc: "Built for speed and efficiency." }
+                ].map((item, i) => (
+                  <div key={i} className="flex gap-4 p-4 rounded-xl hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100">
+                    <div className="mt-1 w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-600">
+                      <CheckCircle className="w-3.5 h-3.5" />
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <span className="text-gray-800 font-medium">Local model processing</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <span className="text-gray-800 font-medium">Secure data handling</span>
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-sm">{item.title}</h4>
+                      <p className="text-sm text-gray-500">{item.desc}</p>
                     </div>
                   </div>
-                </div>
-<a
-  href="https://github.com/sanjayattelli29/ML-Life-Cycle/raw/master/python-codes-b.zip"
-  download="python-codes-b.zip"
-  className="inline-flex items-center justify-center gap-3 bg-gray-900 text-white px-8 py-5 rounded-xl font-bold hover:bg-black transition-all w-full md:w-auto hover:shadow-lg text-lg"
-  onClick={(e) => {
-    e.preventDefault();
-    const button = e.currentTarget;
-    const originalContent = button.innerHTML;
-
-    button.innerHTML = `
-      <div class="flex items-center gap-3">
-        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-          </path>
-        </svg>
-        Downloading...
-      </div>
-    `;
-
-    window.location.href =
-      "https://github.com/sanjayattelli29/ML-Life-Cycle/raw/master/python-codes-b.zip";
-
-    setTimeout(() => {
-      button.innerHTML = originalContent;
-    }, 3000);
-  }}
->
-  <Download className="w-5 h-5" />
-  Download Python Codes (.zip)
-</a>
-
-                <p className="mt-4 text-sm text-gray-400 font-medium">Version 1.0.0 | Windows 10/11 64-bit</p>
+                ))}
               </div>
 
-              <div className="relative">
-                <div
-                  className="relative aspect-video bg-gray-100 rounded-2xl overflow-hidden shadow-2xl shadow-blue-900/10 cursor-pointer group border-4 border-white"
-                  onClick={() => setShowVideo(true)}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <a
+                  href="https://github.com/sanjayattelli29/ML-Life-Cycle/raw/master/python-codes-b.zip"
+                  download="python-codes-b.zip"
+                  className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-8 py-3.5 rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // Just triggering the download, keeping it simple as per "SaaS" sleekness
+                    window.location.href = "https://github.com/sanjayattelli29/ML-Life-Cycle/raw/master/python-codes-b.zip";
+                  }}
                 >
-                  <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-colors z-10"></div>
-                  <div className="absolute inset-0 flex items-center justify-center z-20">
-                    <div className="w-20 h-20 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-lg group-hover:scale-105 transition-all duration-300 pl-1">
-                      <Play className="w-8 h-8 text-blue-600 fill-blue-600" />
-                    </div>
-                  </div>
-                  <Image
-                    src="/banner.png"
-                    alt="Learning Demo Preview"
-                    className="object-cover"
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                </div>
-                {/* Decorative blob behind video */}
-                <div className="absolute -inset-4 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-[2rem] -z-10 opacity-50 blur-xl"></div>
+                  <Download className="w-4 h-4" />
+                  <span>Download for Windows</span>
+                </a>
+                <button
+                  onClick={() => setShowVideo(true)}
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-lg font-semibold text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-all"
+                >
+                  <Play className="w-4 h-4" />
+                  <span>Watch Demo</span>
+                </button>
+              </div>
+              <p className="mt-4 text-xs text-gray-400 font-medium ml-1">Requires Windows 10/11 (64-bit) • v1.0.0 • Python 3</p>
+            </div>
+
+            {/* Right Column: Animation */}
+            <div className="order-1 lg:order-2">
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl blur opacity-20"></div>
+                <ServerAnimation />
               </div>
             </div>
           </div>
@@ -263,11 +323,11 @@ const EnhancedLanding = () => {
 
         {/* Video Modal */}
         {showVideo && (
-          <div className="fixed inset-0 bg-white/80 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300">
-            <div className="relative w-full max-w-5xl bg-black rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 transition-all duration-300">
+            <div className="relative w-full max-w-5xl bg-black rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
               <button
                 onClick={() => setShowVideo(false)}
-                className="absolute top-6 right-6 z-10 text-white/80 hover:text-white transition-colors bg-black/20 hover:bg-black/50 rounded-full p-2 backdrop-blur-sm"
+                className="absolute top-6 right-6 z-10 text-white/50 hover:text-white transition-colors p-2"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -286,8 +346,45 @@ const EnhancedLanding = () => {
         )}
       </section>
 
+      {/* Product Video Section */}
+      <section className="py-2 px-4 sm:px-8 lg:px-12 bg-white border-b border-gray-100 relative">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 tracking-tight">
+              See Ml Life Cycle in Action
+            </h2>
+            <p className="text-xl text-gray-600 leading-relaxed font-light">
+              Watch our quick product promo to discover how Ml Life Cycle transforms your data experience with AI-powered insights and beautiful visualizations.
+            </p>
+          </div>
+
+          <div className="relative max-w-5xl mx-auto">
+            {/* Decorative Elements around video */}
+            <div className="absolute -top-10 -left-10 w-40 h-40 bg-blue-100 rounded-full blur-3xl opacity-60"></div>
+            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-purple-100 rounded-full blur-3xl opacity-60"></div>
+
+            <div className="relative rounded-3xl p-2 bg-gradient-to-b from-gray-100 to-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-100">
+              <div className="rounded-2xl overflow-hidden bg-gray-900 aspect-video shadow-inner relative group">
+                <div className="absolute inset-0 bg-black/5 pointer-events-none z-10 rounded-2xl ring-1 ring-inset ring-black/10"></div>
+
+                <video
+                  src="https://res.cloudinary.com/dws3beqwu/video/upload/v1750513405/wli81fl1tsjg8ui0qovp.mp4"
+                  controls
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover"
+                >
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Why Choose Us */}
-      <section className="py-24 px-4 sm:px-8 lg:px-12 bg-white relative">
+      <section id="testimonials" className="py-24 px-4 sm:px-8 lg:px-12 bg-white relative scroll-mt-20">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight">Why Choose Our Platform?</h2>
@@ -315,7 +412,7 @@ const EnhancedLanding = () => {
       <div className="max-w-7xl mx-auto px-4"><div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent my-12"></div></div>
 
       {/* Features Grid */}
-      <section id="features" className="py-24 px-4 sm:px-8 lg:px-12">
+      <section id="features" className="py-24 px-4 sm:px-8 lg:px-12 scroll-mt-20">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <span className="text-blue-600 font-bold tracking-widest text-xs uppercase mb-3 block">Features</span>
@@ -373,7 +470,7 @@ const EnhancedLanding = () => {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-32 px-4 sm:px-8 lg:px-12 bg-white">
+      <section id="pricing" className="py-32 px-4 sm:px-8 lg:px-12 bg-white scroll-mt-20">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 tracking-tight">Simple Pricing</h2>

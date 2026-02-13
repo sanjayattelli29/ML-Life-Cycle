@@ -216,6 +216,9 @@ IMPORTANT INSTRUCTIONS (DO NOT MENTION THESE IN YOUR RESPONSE):
 - DO NOT use asterisk (*) characters in your response
 - Use plain text formatting only, no markdown asterisks or bold formatting`;
 
+    // Ensure we use the API key from env
+    const GROQ_API_KEY = process.env.NEXT_PUBLIC_GROQ_API_KEY;
+
     const response = await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
@@ -223,10 +226,14 @@ IMPORTANT INSTRUCTIONS (DO NOT MENTION THESE IN YOUR RESPONSE):
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama3-70b-8192',
-        messages: [{ role: 'user', content: concisePrompt }],
-        max_tokens: 300, // Increased from 100 to 300 (3x increase)
-        temperature: 0.7, // Add some creativity while keeping it focused
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct', // Updated to match quality-metrics
+        messages: [
+          { role: 'system', content: 'You are an expert data scientist. Provide clear, actionable, and concise insights.' },
+          { role: 'user', content: concisePrompt }
+        ],
+        max_tokens: 300,
+        temperature: 0.3, // Reduced from 0.7 to 0.3 for consistency
+        top_p: 0.8,
       }),
     });
     if (!response.ok) {
@@ -307,7 +314,7 @@ export const formatRowPreview = (row: Record<string, string | number>, maxLength
   const entries = Object.entries(row);
   if (entries.length === 0) return '{}';
   const formatted = entries.map(([key, value]) => {
-    const valueStr = typeof value === 'string' ? 
+    const valueStr = typeof value === 'string' ?
       `"${value.length > 30 ? value.slice(0, 27) + '...' : value}"` :
       String(value);
     return `${key}: ${valueStr}`;
@@ -320,13 +327,13 @@ export const formatRowPreview = (row: Record<string, string | number>, maxLength
 };
 
 export const generateRowPreview = (
-  data: Dataset['data'], 
-  range: DataRange, 
+  data: Dataset['data'],
+  range: DataRange,
   maxRows: number = 5
 ): { preview: string; insights: string } => {
   const subset = data.slice(range.start, range.end + 1);
   const previewRows = subset.slice(0, maxRows);
-  const preview = previewRows.map((row, i) => 
+  const preview = previewRows.map((row, i) =>
     `Row ${range.start + i}: ${formatRowPreview(row)}`
   ).join('\n');
   const insights = [
@@ -336,8 +343,8 @@ export const generateRowPreview = (
   ].join('\n');
   return {
     preview,
-    insights: subset.length > maxRows ? 
-      `${insights}\n• ${subset.length - maxRows} more rows in range...` : 
+    insights: subset.length > maxRows ?
+      `${insights}\n• ${subset.length - maxRows} more rows in range...` :
       insights
   };
 };
@@ -386,9 +393,9 @@ export const parseIndexRange = (msg: string, maxRows: number): DataRange => {
   start = Math.max(0, Math.min(start, end));
   end = Math.max(start, Math.min(end, maxRows - 1));
   const totalRows = end - start + 1;
-  return { 
-    start, 
-    end, 
+  return {
+    start,
+    end,
     isValid: true,
     totalRows,
     isFullDataset: start === 0 && end === maxRows - 1,
@@ -413,8 +420,8 @@ export const getDistributionChangeDescription = (stats1: StatisticalResult, stat
   } else if (stats2.kurtosis < stats1.kurtosis * 0.7) {
     changes.push('flatter');
   }
-  return changes.length > 0 ? 
-    `Distribution became ${changes.join(', ')}` : 
+  return changes.length > 0 ?
+    `Distribution became ${changes.join(', ')}` :
     'Distribution remained similar';
 };
 
@@ -448,8 +455,8 @@ export const getSubsetStats = (data: Dataset['data'], column: string, range: Dat
 };
 
 export const formatDatasetContext = (dataset: Dataset, range?: DataRange) => {
-  const data = range ? 
-    dataset.data.slice(range.start, range.end + 1) : 
+  const data = range ?
+    dataset.data.slice(range.start, range.end + 1) :
     dataset.data;
   const columnTypes = getColumnTypes(data);
   const stats = columnTypes.numeric.map(col => {
@@ -458,8 +465,8 @@ export const formatDatasetContext = (dataset: Dataset, range?: DataRange) => {
   }).filter(Boolean);
   const { preview, insights } = generateRowPreview(data, range || { start: 0, end: data.length - 1, isValid: true, totalRows: data.length, isFullDataset: true, isSingleRow: false });
   return `Dataset: ${dataset.name}
-${range ? `Analyzing rows ${range.start} to ${range.end} (${range.end - range.start + 1} rows)` : 
-          `Full dataset: ${dataset.data.length} rows`}
+${range ? `Analyzing rows ${range.start} to ${range.end} (${range.end - range.start + 1} rows)` :
+      `Full dataset: ${dataset.data.length} rows`}
 Columns: ${dataset.columns.map(c => c.name).join(', ')}
 Numeric columns: ${columnTypes.numeric.join(', ')}
 Key statistics:
@@ -622,7 +629,7 @@ export const handleAIAnalysis = async (query: string, dataset: Dataset) => {
       }
     });
   });
-  
+
   // Enhanced context with MongoDB metrics (when available) and more detailed analysis
   let mongoMetricsContext = '';
   if (dataset.mongoMetrics) {
@@ -639,14 +646,14 @@ Dataset: ${dataset.name} (${dataset.data.length} rows, ${dataset.columns.length}
 Columns: ${dataset.columns.map(c => `${c.name}(${c.type})`).join(', ')}
 
 Statistical Analysis:
-${Object.entries(advancedStats).slice(0, 3).map(([col, stats]) => 
-  `${col}: avg=${stats.avg.toFixed(2)}, std=${stats.stdDev.toFixed(2)}, range=[${stats.min}-${stats.max}]`
-).join('\n')}
+${Object.entries(advancedStats).slice(0, 3).map(([col, stats]) =>
+    `${col}: avg=${stats.avg.toFixed(2)}, std=${stats.stdDev.toFixed(2)}, range=[${stats.min}-${stats.max}]`
+  ).join('\n')}
 
 Correlations:
-${significantCorrelations.slice(0, 3).map(corr => 
-  `${corr.columns[0]} ↔ ${corr.columns[1]}: r=${corr.correlation.toFixed(3)} (${corr.strength})`
-).join('\n')}${mongoMetricsContext}
+${significantCorrelations.slice(0, 3).map(corr =>
+    `${corr.columns[0]} ↔ ${corr.columns[1]}: r=${corr.correlation.toFixed(3)} (${corr.strength})`
+  ).join('\n')}${mongoMetricsContext}
 
 Data Quality:
 Completeness: High, Outliers detected in numeric columns, Missing values: Low`;
@@ -660,13 +667,13 @@ Provide detailed analysis with specific insights, metrics, and actionable recomm
 
   const aiResponse = await callGroqAPI(prompt);
   let result = aiResponse || 'AI analysis unavailable. Falling back to basic analysis.';
-  
+
   // Filter out asterisk (*) characters to clean up the output
   result = result.replace(/\*/g, '');
-  
+
   // Log the conversation to n8n webhook
   logChatToWebhook(query, result);
-  
+
   return result;
 };
 

@@ -39,7 +39,7 @@
         "clsx": "^2.1.1",
         "date-fns": "^4.1.0",
         "file-saver": "^2.0.5",
-        "framer-motion": "^12.23.6",
+        "framer-motion": "^12.34.0",
         "glob": "^11.0.2",
         "groq-sdk": "^0.24.0",
         "jspdf": "^3.0.1",
