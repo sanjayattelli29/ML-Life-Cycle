@@ -12,8 +12,10 @@ import {
   ChartBarIcon,
   Bars3Icon,
   XMarkIcon,
-  WrenchScrewdriverIcon
+  WrenchScrewdriverIcon,
+  PhoneIcon
 } from '@heroicons/react/24/outline';
+import VapiCallWidget from './VapiCallWidget';
 
 export default function Header() {
   const { data: session, status } = useSession();
@@ -22,6 +24,7 @@ export default function Header() {
   const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
   const [profileImage, setProfileImage] = useState('');
   const [userName, setUserName] = useState('');
+  const [isVapiOpen, setIsVapiOpen] = useState(false);
   const dropdownRef = useRef(null);
   const toolsDropdownRef = useRef(null);
 
@@ -112,110 +115,92 @@ export default function Header() {
     </button>
         </div>
 
-        {/* Desktop Navigation */}
+        {/* Desktop Navigation - Removed empty links to save space */}
         <div className="hidden lg:flex lg:gap-x-1">
-          <Link href="/features" className="relative px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-700 transition-all duration-200 rounded-lg hover:bg-slate-50/80 group">
-            <span className="relative z-10"></span>
-            <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-          </Link>
-          <Link href="/pricing" className="relative px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-700 transition-all duration-200 rounded-lg hover:bg-slate-50/80 group">
-            <span className="relative z-10"></span>
-            <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-          </Link>
-          <Link href="/about" className="relative px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-700 transition-all duration-200 rounded-lg hover:bg-slate-50/80 group">
-            <span className="relative z-10"></span>
-            <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-          </Link>
         </div>
 
         {/* Right Section */}
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:space-x-4">
           {session ? (
-            <>
-              {/* Setup Guide Link */}
-              <Link 
-                href="/setup-guide" 
-                className="relative px-4 py-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-all duration-200 rounded-lg hover:bg-emerald-50/80 group flex items-center gap-2"
-              >
-                <WrenchScrewdriverIcon className="w-4 h-4" />
-                <span className="relative z-10">Setup Guide</span>
-                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-emerald-50 to-emerald-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-              </Link>
-
-              {/* Dashboard Link */}
-              <Link 
-                href="/dashboard" 
-                className="relative px-4 py-2 text-sm font-semibold text-indigo-700 hover:text-indigo-800 transition-all duration-200 rounded-lg hover:bg-indigo-50/80 group"
-              >
-                <span className="relative z-10">Dashboard</span>
-                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-50 to-indigo-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-              </Link>
-
-              {/* Tools Dropdown */}
-              <div className="relative" ref={toolsDropdownRef}>
-                <button
-                  type="button"
-                  className="flex items-center space-x-2 px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900 transition-all duration-200 rounded-lg hover:bg-slate-50/80 group"
-                  onClick={() => setToolsDropdownOpen(!toolsDropdownOpen)}
-                  aria-expanded={toolsDropdownOpen}
-                  aria-haspopup="true"
-                >
-                  <WrenchScrewdriverIcon className="w-4 h-4" />
-                  <span className="relative z-10">Tools</span>
-                  <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${toolsDropdownOpen ? 'rotate-180' : ''}`} />
-                  <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-slate-50 to-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-                </button>
-
-                {/* Tools Dropdown Menu */}
-                {toolsDropdownOpen && (
-                  <div className="absolute left-0 mt-3 w-56 bg-white rounded-2xl border border-slate-200/60 backdrop-blur-xl z-50 overflow-hidden shadow-xl">
-                    <div className="absolute inset-0 bg-white/95 backdrop-blur-xl"></div>
-                    
-                    {/* Menu Items */}
-                    <div className="relative py-2">
-                      <Link
-                        href="/dashboard/knowledge"
-                        className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50/80 transition-all duration-200"
-                        onClick={() => setToolsDropdownOpen(false)}
-                      >
-                        <svg className="w-4 h-4 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                        Knowledge
-                      </Link>
-                      <Link
-                        href="/dashboard/notes"
-                        className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50/80 transition-all duration-200"
-                        onClick={() => setToolsDropdownOpen(false)}
-                      >
-                        <svg className="w-4 h-4 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Notes
-                      </Link>
-                      <Link
-                        href="/dashboard/metrics-guide"
-                        className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50/80 transition-all duration-200"
-                        onClick={() => setToolsDropdownOpen(false)}
-                      >
-                        <svg className="w-4 h-4 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        Metrics Guide
-                      </Link>
-                      <Link
-                        href="/dashboard/whiteboard"
-                        className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50/80 transition-all duration-200"
-                        onClick={() => setToolsDropdownOpen(false)}
-                      >
-                        <svg className="w-4 h-4 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                        Whiteboard
-                      </Link>
-                    </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                {isVapiOpen && (
+                  <div className="mr-2">
+                    <VapiCallWidget
+                      apiKey={process.env.NEXT_PUBLIC_VAPI_PUBLIC_API_KEY || ''}
+                      assistantId={process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || ''}
+                      isOpen={isVapiOpen}
+                      onClose={() => setIsVapiOpen(false)}
+                    />
                   </div>
                 )}
+
+                {/* Vapi Call Button */}
+                <button
+                  onClick={() => setIsVapiOpen(true)}
+                  disabled={isVapiOpen}
+                  className={`group relative flex items-center gap-2.5 px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl border whitespace-nowrap ${
+                    isVapiOpen 
+                      ? 'text-indigo-400 bg-indigo-50/10 border-indigo-200/30 cursor-default shadow-inner' 
+                      : 'text-indigo-600 bg-white border-slate-200 hover:border-indigo-200 hover:bg-indigo-50/30 hover:shadow-md active:scale-95'
+                  }`}
+                >
+                  <div className={`p-1.5 rounded-lg transition-colors ${isVapiOpen ? 'bg-indigo-100/50' : 'bg-indigo-50 group-hover:bg-white'}`}>
+                    <PhoneIcon className={`w-4 h-4 ${isVapiOpen ? 'text-indigo-400 animate-pulse' : 'text-indigo-600'}`} />
+                  </div>
+                  <span className="relative z-10">{isVapiOpen ? 'Live with AI' : 'Talk to AI'}</span>
+                </button>
+
+                <Link 
+                  href="/setup-guide" 
+                  className="px-4 py-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-all duration-200 rounded-xl border border-transparent hover:bg-emerald-50/50 flex items-center gap-2 whitespace-nowrap"
+                >
+                  <WrenchScrewdriverIcon className="w-4 h-4" />
+                  <span>Setup Guide</span>
+                </Link>
+
+                <Link 
+                  href="/dashboard" 
+                  className="px-4 py-2 text-sm font-semibold text-indigo-700 hover:text-indigo-800 transition-all duration-200 rounded-xl hover:bg-indigo-50/80 whitespace-nowrap"
+                >
+                  Dashboard
+                </Link>
+
+                {/* Tools Dropdown */}
+                <div className="relative" ref={toolsDropdownRef}>
+                  <button
+                    type="button"
+                    className="flex items-center space-x-2 px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900 transition-all duration-200 rounded-xl hover:bg-slate-50/80 whitespace-nowrap"
+                    onClick={() => setToolsDropdownOpen(!toolsDropdownOpen)}
+                  >
+                    <WrenchScrewdriverIcon className="w-4 h-4 text-slate-500" />
+                    <span>Tools</span>
+                    <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${toolsDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {toolsDropdownOpen && (
+                    <div className="absolute left-0 mt-3 w-56 bg-white rounded-2xl border border-slate-200/60 shadow-xl z-50 overflow-hidden">
+                      <div className="py-2">
+                        <Link href="/dashboard/knowledge" className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                          <svg className="w-4 h-4 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                          Knowledge
+                        </Link>
+                        <Link href="/dashboard/notes" className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                          <svg className="w-4 h-4 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                          Notes
+                        </Link>
+                        <Link href="/dashboard/metrics-guide" className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                          <svg className="w-4 h-4 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                          Metrics Guide
+                        </Link>
+                        <Link href="/dashboard/whiteboard" className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                          <svg className="w-4 h-4 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                          Whiteboard
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* User Avatar Dropdown */}
@@ -317,7 +302,7 @@ export default function Header() {
                   </div>
                 )}
               </div>
-            </>
+            </div>
           ) : (
             <div className="flex items-center gap-3">
               <Link href="/auth/signin" className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors duration-200 rounded-lg hover:bg-slate-50/80">
