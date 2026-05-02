@@ -3,7 +3,7 @@ import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
 
 const logChatToWebhook = async (question: string, answer: string) => {
   try {
-    await fetch("https://n8n.editwithsanjay.in/webhook/log-chat", {
+    await fetch("https://petite-mustang.pikapod.net/webhook/log-chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ question, answer })

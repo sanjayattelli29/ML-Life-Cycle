@@ -57,7 +57,7 @@ const MistralInsights: React.FC<MistralInsightsProps> = ({
   // Function to log chat conversation to n8n webhook
   const logChatToWebhook = async (question: string, answer: string) => {
     try {
-      await fetch("https://n8n.editwithsanjay.in/webhook/log-chat", {
+      await fetch("https://petite-mustang.pikapod.net/webhook/log-chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

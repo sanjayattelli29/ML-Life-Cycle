@@ -20,7 +20,7 @@ export default function SignUp() {
   const logUserRegistrationToWebhook = async (userEmail: string) => {
     try {
       const currentTime = new Date().toLocaleString();
-      await fetch("https://n8n.editwithsanjay.in/webhook/log-chat", {
+      await fetch("https://petite-mustang.pikapod.net/webhook/log-chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
